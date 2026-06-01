@@ -195,10 +195,59 @@ export default function Home() {
       logging: false,
     });
 
-    const link = document.createElement("a");
-    link.download = `oranje-builder-${formationName}.png`;
-    link.href = canvas.toDataURL("image/png", 1);
-    link.click();
+    const fileName = `oranje-builder-${formationName}.png`;
+
+    const downloadPng = () => {
+      const link = document.createElement("a");
+      link.download = fileName;
+      link.href = canvas.toDataURL("image/png", 1);
+      link.click();
+    };
+
+    const isMobileShare =
+      typeof window !== "undefined" &&
+      window.innerWidth <= 760 &&
+      typeof navigator !== "undefined" &&
+      typeof navigator.share === "function";
+
+    if (isMobileShare) {
+      canvas.toBlob(async (blob) => {
+        if (!blob) {
+          downloadPng();
+          return;
+        }
+
+        const file = new File([blob], fileName, { type: "image/png" });
+        const shareData = {
+          title: "Mijn Oranje-opstelling",
+          text: "Mijn Oranje-opstelling",
+          files: [file],
+        };
+
+        try {
+          if (
+            typeof navigator.canShare === "function" &&
+            navigator.canShare({ files: [file] })
+          ) {
+            await navigator.share(shareData);
+            return;
+          }
+
+          await navigator.share({
+            title: shareData.title,
+            text: shareData.text,
+          });
+        } catch (error) {
+          if ((error as Error)?.name !== "AbortError") {
+            downloadPng();
+          }
+        }
+      }, "image/png", 1);
+
+      return;
+    }
+
+    downloadPng();
   };
 
   const getSlotRole = (slotIndex: number): SlotRole => {
