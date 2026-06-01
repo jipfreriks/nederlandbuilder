@@ -80,8 +80,8 @@ const HATO_LIST_SCALE = 1.15;
 const HATO_LIST_HOVER_SCALE = 1.24;
 
 // Noa Lang
-const NOA_LANG_SCALE = 0.92;
-const NOA_LANG_Y = "-10%";
+const NOA_LANG_SCALE = 1;
+const NOA_LANG_Y = "0";
 
 // Teun Koopmeiners
 const KOOPMEINERS_Y = "25%";
