@@ -1128,7 +1128,7 @@ const styles: any = {
 
   mobileFieldActionControls: {
     top: "auto",
-    bottom: 8,
+    bottom: 0,
     right: 0,
     gap: 7,
     alignItems: "stretch",
