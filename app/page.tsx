@@ -1101,6 +1101,8 @@ const styles: any = {
   mobilePitchPerspective: {
     top: "12%",
     bottom: "12%",
+    left: "6%",
+    right: "6%",
   },
 
   mobileFormation: {
@@ -1136,15 +1138,15 @@ const styles: any = {
   },
 
   mobileFormationButton: {
-    padding: "6px 8px",
-    fontSize: 9,
-    borderRadius: 9,
+    padding: "10px 14px",
+    fontSize: 11,
+    borderRadius: 11,
   },
 
   mobileActionButton: {
-    padding: "7px 8px",
-    fontSize: 8,
-    borderRadius: 10,
+    padding: "10px 14px",
+    fontSize: 11,
+    borderRadius: 12,
   },
 
   mobilePanelWrap: {
