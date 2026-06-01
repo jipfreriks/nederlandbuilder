@@ -116,8 +116,8 @@ export default async function ExportPage({
                     : "0%",
                 transform:
                   player.id === 26
-                    ? `translateX(-50%) scale(${ROEFS_FIELD_SCALE})`
-                    : "translateX(-50%)",
+                    ? `scale(${ROEFS_FIELD_SCALE})`
+                    : "scale(1)",
               }}
             />
             <div style={styles.cardOverlay} />
@@ -257,14 +257,11 @@ const styles: Record<string, React.CSSProperties> = {
 
   cardPhoto: {
     position: "absolute",
-    left: "50%",
+    left: 0,
     top: "0%",
-    width: "auto",
-    height: "100%",
-    minWidth: "100%",
+    width: "100%",
+    height: "auto",
     display: "block",
-    objectFit: "initial",
-    objectPosition: "initial",
     imageRendering: "auto",
     transformOrigin: "center center",
   },

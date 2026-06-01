@@ -333,9 +333,12 @@ export default function Home() {
         await iframeDocument.fonts.ready;
       }
 
+      const exportScale =
+        typeof window !== "undefined" && window.innerWidth <= 760 ? 2.5 : 4;
+
       const canvas = await html2canvas(exportRoot, {
         backgroundColor: "#ff4d00",
-        scale: 4,
+        scale: exportScale,
         useCORS: true,
         allowTaint: false,
         imageTimeout: 10000,
