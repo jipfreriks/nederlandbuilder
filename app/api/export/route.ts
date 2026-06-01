@@ -1,4 +1,4 @@
-import chromium from "@sparticuz/chromium";
+import chromium from "@sparticuz/chromium-min";
 import puppeteer from "puppeteer-core";
 
 export const runtime = "nodejs";
@@ -9,6 +9,9 @@ type ExportBody = {
   formationName?: "433" | "532" | "442";
   squadIds?: string;
 };
+
+const CHROMIUM_PACK_URL =
+  "https://github.com/Sparticuz/chromium/releases/download/v147.0.2/chromium-v147.0.2-pack.x64.tar";
 
 export async function POST(req: Request) {
   let browser: Awaited<ReturnType<typeof puppeteer.launch>> | null = null;
@@ -35,21 +38,20 @@ export async function POST(req: Request) {
       squadIds
     )}`;
 
-    const isLocal =
-      host.includes("localhost") ||
-      host.includes("127.0.0.1") ||
-      process.env.NODE_ENV === "development";
-
     browser = await puppeteer.launch({
-      args: isLocal ? [] : chromium.args,
+      args: [
+        ...chromium.args,
+        "--hide-scrollbars",
+        "--disable-web-security",
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+      ],
       defaultViewport: {
         width: 760,
         height: 950,
         deviceScaleFactor: 2,
       },
-      executablePath: isLocal
-        ? undefined
-        : await chromium.executablePath(),
+      executablePath: await chromium.executablePath(CHROMIUM_PACK_URL),
       headless: true,
     });
 
@@ -62,6 +64,7 @@ export async function POST(req: Request) {
 
     await page.evaluate(async () => {
       const images = Array.from(document.images);
+
       await Promise.all(
         images.map((img) => {
           if (img.complete) return Promise.resolve();
