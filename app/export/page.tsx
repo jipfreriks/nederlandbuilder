@@ -63,9 +63,6 @@ const FORMATIONS: Record<FormationName, number[][]> = {
 const ROEFS_FIELD_SCALE = 1.15;
 const ROEFS_FIELD_Y = "-60%";
 
-const NOA_LANG_SCALE = 1;
-const NOA_LANG_Y = "0";
-
 const KOOPMEINERS_Y = "25%";
 // =====================================================
 
@@ -115,14 +112,10 @@ export default async function ExportPage({
                     ? `center ${ROEFS_FIELD_Y}`
                     : player.id === 12
                     ? `center ${KOOPMEINERS_Y}`
-                    : player.id === 22
-                    ? `center ${NOA_LANG_Y}`
                     : "center 15%",
                 transform:
                   player.id === 26
                     ? `scale(${ROEFS_FIELD_SCALE})`
-                    : player.id === 22
-                    ? `scale(${NOA_LANG_SCALE})`
                     : "scale(1)",
               }}
             />
@@ -152,6 +145,10 @@ export default async function ExportPage({
           min-height: 100%;
           overflow: hidden;
           background: #ff4d00;
+        }
+
+        * {
+          box-sizing: border-box;
         }
       `}</style>
 
@@ -187,7 +184,7 @@ const styles: Record<string, React.CSSProperties> = {
   page: {
     width: 760,
     position: "relative",
-    overflow: "hidden",
+    overflow: "clip",
     boxSizing: "border-box",
     padding: "40px 18px",
     background: "linear-gradient(135deg,#ff7a18,#ff4d00,#6b0000)",
@@ -196,13 +193,15 @@ const styles: Record<string, React.CSSProperties> = {
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
+    border: "0 solid transparent",
+    outline: "1px solid #ff4d00",
   },
 
   textureSvg: {
     position: "absolute",
-    inset: 0,
-    width: "100%",
-    height: "100%",
+    inset: -2,
+    width: "calc(100% + 4px)",
+    height: "calc(100% + 4px)",
     zIndex: 1,
     pointerEvents: "none",
   },
@@ -255,9 +254,10 @@ const styles: Record<string, React.CSSProperties> = {
 
   cardPhoto: {
     position: "absolute",
-    inset: "-2%",
-    width: "104%",
-    height: "104%",
+    inset: 0,
+    width: "100%",
+    height: "100%",
+    display: "block",
     objectFit: "cover",
     objectPosition: "center 15%",
     imageRendering: "auto",
@@ -273,11 +273,11 @@ const styles: Record<string, React.CSSProperties> = {
 
   cardName: {
     position: "absolute",
-    bottom: 16,
+    bottom: 15,
     left: 0,
     width: "100%",
     textAlign: "center",
-    fontSize: 15,
+    fontSize: 14,
     textShadow: "0 2px 10px black",
     padding: "0 4px",
     pointerEvents: "none",

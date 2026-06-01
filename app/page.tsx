@@ -79,10 +79,6 @@ const ROEFS_LIST_HOVER_SCALE = 1.30;
 const HATO_LIST_SCALE = 1.15;
 const HATO_LIST_HOVER_SCALE = 1.24;
 
-// Noa Lang
-const NOA_LANG_SCALE = 1;
-const NOA_LANG_Y = "0";
-
 // Teun Koopmeiners
 const KOOPMEINERS_Y = "25%";
 // =====================================================
@@ -370,18 +366,18 @@ export default function Home() {
       if (!target || !panel) return;
 
       if (window.innerWidth <= 760) {
-        const previousSnapType = panel.style.scrollSnapType;
-        panel.style.scrollSnapType = "none";
+        if (lastMobileAutoScrollRole.current === role) {
+          return;
+        }
+
+        lastMobileAutoScrollRole.current = role;
 
         panel.scrollTo({
           left: Math.max(0, target.offsetLeft - 10),
           behavior: "smooth",
         });
 
-        window.setTimeout(() => {
-          panel.style.scrollSnapType = previousSnapType;
-          updateScrollProgress();
-        }, 420);
+        window.setTimeout(updateScrollProgress, 420);
       } else {
         target.scrollIntoView({
           behavior: "smooth",
@@ -578,14 +574,10 @@ export default function Home() {
                     ? `center ${ROEFS_FIELD_Y}`
                     : player.id === 12
                     ? `center ${KOOPMEINERS_Y}`
-                    : player.id === 22
-                    ? `center ${NOA_LANG_Y}`
                     : styles.cardPhoto.backgroundPosition,
                 transform:
                   player.id === 26
                     ? (hover ? `scale(${ROEFS_FIELD_HOVER_SCALE})` : `scale(${ROEFS_FIELD_SCALE})`)
-                    : player.id === 22
-                    ? (hover ? `scale(${NOA_LANG_SCALE + 0.08})` : `scale(${NOA_LANG_SCALE})`)
                     : (hover ? "scale(1.08)" : "scale(1)"),
               }}
             />
@@ -756,11 +748,8 @@ export default function Home() {
                         : hover
                         ? "0 10px 26px rgba(255,120,0,0.35)"
                         : "none",
-                      scrollSnapAlign: isMobile
-                        ? (playerIndex % 3 === 0 ? "start" : "none")
-                        : "start",
-                      scrollSnapStop:
-                        isMobile && playerIndex % 3 === 0 ? "always" : "normal",
+                      scrollSnapAlign: "start",
+                      scrollSnapStop: "always",
                     }}
                   >
                     <div
@@ -1324,6 +1313,7 @@ const styles: any = {
     minHeight: 0,
     borderRadius: 14,
     scrollSnapAlign: "start",
+    scrollSnapStop: "always",
   },
 
   mobileCustomScrollbar: {
