@@ -145,6 +145,10 @@ export default async function ExportPage({
           overflow: hidden;
           background: #ff4d00;
         }
+
+        * {
+          box-sizing: border-box;
+        }
       `}</style>
 
       <main id="export-root" style={styles.page}>
@@ -179,7 +183,7 @@ const styles: Record<string, React.CSSProperties> = {
   page: {
     width: 760,
     position: "relative",
-    overflow: "hidden",
+    overflow: "clip",
     boxSizing: "border-box",
     padding: "40px 18px",
     background: "linear-gradient(135deg,#ff7a18,#ff4d00,#6b0000)",
@@ -188,13 +192,15 @@ const styles: Record<string, React.CSSProperties> = {
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
+    outline: "2px solid #ff4d00",
+    outlineOffset: "-1px",
   },
 
   textureSvg: {
     position: "absolute",
-    inset: 0,
-    width: "100%",
-    height: "100%",
+    inset: -2,
+    width: "calc(100% + 4px)",
+    height: "calc(100% + 4px)",
     zIndex: 1,
     pointerEvents: "none",
   },
@@ -264,11 +270,11 @@ const styles: Record<string, React.CSSProperties> = {
 
   cardName: {
     position: "absolute",
-    bottom: 15,
+    bottom: 11,
     left: 0,
     width: "100%",
     textAlign: "center",
-    fontSize: 14,
+    fontSize: 11,
     textShadow: "0 2px 10px black",
     padding: "0 4px",
     pointerEvents: "none",
