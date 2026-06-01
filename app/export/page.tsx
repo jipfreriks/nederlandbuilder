@@ -61,9 +61,9 @@ const FORMATIONS: Record<FormationName, number[][]> = {
 // PLAYER PHOTO TWEAKS (ZOEK HIEROP)
 // =====================================================
 const ROEFS_FIELD_SCALE = 1.15;
-const ROEFS_FIELD_Y = "-60%";
+const ROEFS_FIELD_Y = "0";
 
-const KOOPMEINERS_Y = "25%";
+const KOOPMEINERS_Y = "0";
 // =====================================================
 
 function getPlayer(id: number) {
