@@ -63,6 +63,23 @@ const FORMATIONS: Record<FormationName, number[][]> = {
   "442": [[0, 1], [2, 3, 4, 5], [6, 7, 8, 9], [10]],
 };
 
+
+// =====================================================
+// PLAYER PHOTO TWEAKS (ZOEK HIEROP)
+// =====================================================
+// Robin Roefs
+const ROEFS_FIELD_SCALE = 1.15;
+const ROEFS_FIELD_HOVER_SCALE = 1.25;
+const ROEFS_FIELD_Y = "-60%";
+
+const ROEFS_LIST_SCALE = 1.20;
+const ROEFS_LIST_HOVER_SCALE = 1.30;
+
+// Jorrel Hato
+const HATO_LIST_SCALE = 1.15;
+const HATO_LIST_HOVER_SCALE = 1.24;
+// =====================================================
+
 const TRASH_CURSOR =
   "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Crect x='10' y='12' width='12' height='13' rx='2' fill='none' stroke='%23ffffff' stroke-width='2.2'/%3E%3Cpath d='M9 9h14M13 9V7h6v2M14 15v7M18 15v7' fill='none' stroke='%23ffffff' stroke-width='2.2' stroke-linecap='round'/%3E%3C/svg%3E\") 16 16, pointer";
 
@@ -463,7 +480,8 @@ export default function Home() {
                 ...styles.cardPhoto,
                 ...(exportMode ? styles.exportCardPhoto : {}),
                 backgroundImage: `url("${proxiedImage(player.image)}")`,
-                transform: hover ? "scale(1.08)" : "scale(1)",
+                backgroundPosition: player.id === 26 ? `center ${ROEFS_FIELD_Y}` : styles.cardPhoto.backgroundPosition,
+                transform: player.id === 26 ? (hover ? `scale(${ROEFS_FIELD_HOVER_SCALE})` : `scale(${ROEFS_FIELD_SCALE})`) : (hover ? "scale(1.08)" : "scale(1)"),
               }}
             />
             <div style={styles.cardOverlay} />
@@ -634,7 +652,10 @@ export default function Home() {
                       style={{
                         ...styles.inventoryPhoto,
                         backgroundImage: `url("${proxiedImage(p.image)}")`,
-                        transform: hover ? "scale(1.16)" : "scale(1.08)",
+                        transform:
+                          hover
+                            ? (p.id === 26 ? `scale(${ROEFS_LIST_HOVER_SCALE})` : p.id === 6 ? `scale(${HATO_LIST_HOVER_SCALE})` : "scale(1.16)")
+                            : (p.id === 26 ? "scale(1.20)" : p.id === 6 ? "scale(1.15)" : "scale(1.08)"),
                       }}
                     />
                     <div style={styles.cardOverlay} />
