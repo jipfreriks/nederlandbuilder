@@ -107,6 +107,9 @@ export default function Home() {
   const panelRef = useRef<HTMLDivElement | null>(null);
   const playerRefs = useRef<Record<number, HTMLDivElement | null>>({});
   const lastMobileAutoScrollRole = useRef<SlotRole | null>(null);
+  const preparedMobileShareBlob = useRef<Blob | null>(null);
+  const preparedMobileShareKey = useRef<string>("");
+  const [isPreparingShare, setIsPreparingShare] = useState(false);
   const formation = FORMATIONS[formationName];
 
   useEffect(() => {
@@ -193,6 +196,30 @@ export default function Home() {
     }
   }, [selectedPlayer, selectedSlot]);
 
+  useEffect(() => {
+    if (!isMobile) return;
+
+    preparedMobileShareBlob.current = null;
+    preparedMobileShareKey.current = "";
+    setIsPreparingShare(true);
+
+    const timeout = window.setTimeout(async () => {
+      try {
+        const key = getExportKey();
+        const blob = await fetchExportBlob();
+        preparedMobileShareBlob.current = blob;
+        preparedMobileShareKey.current = key;
+      } catch {
+        preparedMobileShareBlob.current = null;
+        preparedMobileShareKey.current = "";
+      } finally {
+        setIsPreparingShare(false);
+      }
+    }, 900);
+
+    return () => window.clearTimeout(timeout);
+  }, [formationName, squad, isMobile]);
+
   const preloadImages = async () => {
     await Promise.all(
       PLAYERS.map(
@@ -207,81 +234,94 @@ export default function Home() {
     );
   };
 
+  const getExportKey = () =>
+    `${formationName}:${squad.map((player) => player?.id ?? 0).join(",")}`;
+
+  const fetchExportBlob = async () => {
+    const squadIds = squad.map((player) => player?.id ?? 0).join(",");
+
+    const response = await fetch("/api/export", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        formationName,
+        squadIds,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Export mislukt");
+    }
+
+    return response.blob();
+  };
+
+  const shareBlob = async (blob: Blob) => {
+    const fileName = `oranje-builder-${formationName}.png`;
+    const file = new File([blob], fileName, { type: "image/png" });
+
+    if (
+      typeof navigator !== "undefined" &&
+      typeof navigator.share === "function"
+    ) {
+      await navigator.share({
+        title: "Mijn Oranje-opstelling",
+        text: "Mijn Oranje-opstelling",
+        files: [file],
+      });
+      return;
+    }
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.download = fileName;
+    link.href = url;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   const exportPng = async () => {
     if (isExporting) return;
 
     setIsExporting(true);
 
-    const fileName = `oranje-builder-${formationName}.png`;
+    const isMobileShare =
+      typeof window !== "undefined" &&
+      window.innerWidth <= 760 &&
+      typeof navigator !== "undefined" &&
+      typeof navigator.share === "function";
 
-    const downloadBlob = (blob: Blob) => {
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.download = fileName;
-      link.href = url;
-      link.click();
-      URL.revokeObjectURL(url);
-    };
-
-    const shareOrDownloadBlob = async (blob: Blob) => {
-      const isMobileShare =
-        typeof window !== "undefined" &&
-        window.innerWidth <= 760 &&
-        typeof navigator !== "undefined" &&
-        typeof navigator.share === "function";
-
-      if (isMobileShare) {
-        try {
-          const file = new File([blob], fileName, { type: "image/png" });
-
-          if (
-            typeof navigator.canShare === "function" &&
-            navigator.canShare({ files: [file] })
-          ) {
-            await navigator.share({
-              title: "Mijn Oranje-opstelling",
-              text: "Mijn Oranje-opstelling",
-              files: [file],
-            });
-            return;
-          }
-
-          await navigator.share({
-            title: "Mijn Oranje-opstelling",
-            text: "Mijn Oranje-opstelling",
-          });
-          return;
-        } catch (error) {
-          if ((error as Error)?.name === "AbortError") return;
-        }
-      }
-
-      downloadBlob(blob);
-    };
+    const currentKey = getExportKey();
 
     try {
-      const squadIds = squad.map((player) => player?.id ?? 0).join(",");
+      if (isMobileShare) {
+        if (
+          preparedMobileShareBlob.current &&
+          preparedMobileShareKey.current === currentKey
+        ) {
+          await shareBlob(preparedMobileShareBlob.current);
+          return;
+        }
 
-      const response = await fetch("/api/export", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          formationName,
-          squadIds,
-        }),
-      });
+        setIsPreparingShare(true);
 
-      if (!response.ok) {
-        alert("Export mislukt. Probeer het opnieuw.");
+        const blob = await fetchExportBlob();
+        preparedMobileShareBlob.current = blob;
+        preparedMobileShareKey.current = currentKey;
+
+        alert("Export staat klaar. Tik nog één keer op deel om het share-menu te openen.");
         return;
       }
 
-      const blob = await response.blob();
-      await shareOrDownloadBlob(blob);
+      const blob = await fetchExportBlob();
+      await shareBlob(blob);
+    } catch (error) {
+      alert("Export mislukt. Probeer het opnieuw.");
     } finally {
       setIsExporting(false);
+      setIsPreparingShare(false);
     }
   };
 
@@ -638,7 +678,7 @@ export default function Home() {
                 cursor: isExporting ? "wait" : "pointer",
               }}
             >
-              {isExporting ? "bezig..." : "deel ↗"}
+              {isExporting ? "bezig..." : isMobile && isPreparingShare ? "laden..." : "deel ↗"}
             </button>
 
             <button
