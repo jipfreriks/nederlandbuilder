@@ -1,7 +1,9 @@
-import { chromium } from "playwright";
+import chromium from "@sparticuz/chromium";
+import puppeteer from "puppeteer-core";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 type ExportBody = {
   formationName?: "433" | "532" | "442";
@@ -9,7 +11,7 @@ type ExportBody = {
 };
 
 export async function POST(req: Request) {
-  let browser: Awaited<ReturnType<typeof chromium.launch>> | null = null;
+  let browser: Awaited<ReturnType<typeof puppeteer.launch>> | null = null;
 
   try {
     const body = (await req.json()) as ExportBody;
@@ -22,7 +24,7 @@ export async function POST(req: Request) {
     const squadIds = body.squadIds ?? "";
 
     const host = req.headers.get("x-forwarded-host") ?? req.headers.get("host");
-    const proto = req.headers.get("x-forwarded-proto") ?? "http";
+    const proto = req.headers.get("x-forwarded-proto") ?? "https";
 
     if (!host) {
       return new Response("Missing host", { status: 400 });
@@ -33,20 +35,28 @@ export async function POST(req: Request) {
       squadIds
     )}`;
 
-    browser = await chromium.launch({
+    const isLocal =
+      host.includes("localhost") ||
+      host.includes("127.0.0.1") ||
+      process.env.NODE_ENV === "development";
+
+    browser = await puppeteer.launch({
+      args: isLocal ? [] : chromium.args,
+      defaultViewport: {
+        width: 760,
+        height: 950,
+        deviceScaleFactor: 2,
+      },
+      executablePath: isLocal
+        ? undefined
+        : await chromium.executablePath(),
       headless: true,
     });
 
-    const page = await browser.newPage({
-      viewport: {
-        width: 760,
-        height: 950,
-      },
-      deviceScaleFactor: 2,
-    });
+    const page = await browser.newPage();
 
     await page.goto(exportUrl, {
-      waitUntil: "networkidle",
+      waitUntil: "networkidle0",
       timeout: 30000,
     });
 
@@ -55,6 +65,7 @@ export async function POST(req: Request) {
       await Promise.all(
         images.map((img) => {
           if (img.complete) return Promise.resolve();
+
           return new Promise<void>((resolve) => {
             img.onload = () => resolve();
             img.onerror = () => resolve();
@@ -67,7 +78,13 @@ export async function POST(req: Request) {
       }
     });
 
-    const screenshot = await page.locator("#export-root").screenshot({
+    const element = await page.$("#export-root");
+
+    if (!element) {
+      return new Response("Export root not found", { status: 500 });
+    }
+
+    const screenshot = await element.screenshot({
       type: "png",
     });
 
@@ -78,7 +95,7 @@ export async function POST(req: Request) {
       },
     });
   } catch (error) {
-    console.error(error);
+    console.error("Export failed:", error);
     return new Response("Export failed", { status: 500 });
   } finally {
     if (browser) {
