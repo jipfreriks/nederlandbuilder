@@ -273,7 +273,7 @@ const styles: Record<string, React.CSSProperties> = {
     left: 0,
     width: "100%",
     textAlign: "center",
-    fontSize: 9,
+    fontSize: 13,
     textShadow: "0 2px 10px black",
     padding: "0 4px",
     pointerEvents: "none",

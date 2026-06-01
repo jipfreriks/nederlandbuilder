@@ -80,8 +80,8 @@ const HATO_LIST_SCALE = 1.15;
 const HATO_LIST_HOVER_SCALE = 1.24;
 
 // Noa Lang
-const NOA_LANG_SCALE = 1;
-const NOA_LANG_Y = "0";
+const NOA_LANG_SCALE = 0.92;
+const NOA_LANG_Y = "-10%";
 
 // Teun Koopmeiners
 const KOOPMEINERS_Y = "25%";
@@ -285,10 +285,18 @@ export default function Home() {
       if (!target || !panel) return;
 
       if (window.innerWidth <= 760) {
+        const previousSnapType = panel.style.scrollSnapType;
+        panel.style.scrollSnapType = "none";
+
         panel.scrollTo({
-          left: target.offsetLeft - panel.offsetLeft,
+          left: Math.max(0, target.offsetLeft - 10),
           behavior: "smooth",
         });
+
+        window.setTimeout(() => {
+          panel.style.scrollSnapType = previousSnapType;
+          updateScrollProgress();
+        }, 420);
       } else {
         target.scrollIntoView({
           behavior: "smooth",
