@@ -107,7 +107,6 @@ export default function Home() {
   const panelRef = useRef<HTMLDivElement | null>(null);
   const playerRefs = useRef<Record<number, HTMLDivElement | null>>({});
   const lastMobileAutoScrollRole = useRef<SlotRole | null>(null);
-  const preparedMobileShareBlob = useRef<Blob | null>(null);
   const formation = FORMATIONS[formationName];
 
   useEffect(() => {
@@ -232,31 +231,28 @@ export default function Home() {
         typeof navigator.share === "function";
 
       if (isMobileShare) {
-        const file = new File([blob], fileName, { type: "image/png" });
-
         try {
-          await navigator.share({
-            title: "Mijn Oranje-opstelling",
-            text: "Mijn Oranje-opstelling",
-            files: [file],
-          });
-          preparedMobileShareBlob.current = null;
-          return;
-        } catch (error) {
-          if ((error as Error)?.name === "AbortError") return;
+          const file = new File([blob], fileName, { type: "image/png" });
 
-          try {
+          if (
+            typeof navigator.canShare === "function" &&
+            navigator.canShare({ files: [file] })
+          ) {
             await navigator.share({
               title: "Mijn Oranje-opstelling",
               text: "Mijn Oranje-opstelling",
+              files: [file],
             });
-            preparedMobileShareBlob.current = null;
-            return;
-          } catch {
-            preparedMobileShareBlob.current = blob;
-            alert("Export staat klaar. Tik nog een keer op deel om het Apple-share-menu te openen.");
             return;
           }
+
+          await navigator.share({
+            title: "Mijn Oranje-opstelling",
+            text: "Mijn Oranje-opstelling",
+          });
+          return;
+        } catch (error) {
+          if ((error as Error)?.name === "AbortError") return;
         }
       }
 
@@ -264,43 +260,6 @@ export default function Home() {
     };
 
     try {
-      const isMobileDevice =
-        typeof window !== "undefined" && window.innerWidth <= 760;
-
-      // Mobiel: als de export al klaarstaat, open direct het native share-menu.
-      if (isMobileDevice && preparedMobileShareBlob.current) {
-        await shareOrDownloadBlob(preparedMobileShareBlob.current);
-        return;
-      }
-
-      // Mobiel: lokaal exporteren, zodat het native share-menu betrouwbaar opent.
-      if (isMobileDevice) {
-        if (!exportRef.current) return;
-
-        await preloadImages();
-
-        const canvas = await html2canvas(exportRef.current, {
-          backgroundColor: null,
-          scale: 3,
-          useCORS: true,
-          allowTaint: false,
-          imageTimeout: 15000,
-          logging: false,
-        });
-
-        await new Promise<void>((resolve) => {
-          canvas.toBlob(async (blob) => {
-            if (blob) {
-              await shareOrDownloadBlob(blob);
-            }
-            resolve();
-          }, "image/png", 1);
-        });
-
-        return;
-      }
-
-      // Desktop: server-export via /api/export.
       const squadIds = squad.map((player) => player?.id ?? 0).join(",");
 
       const response = await fetch("/api/export", {
@@ -320,7 +279,7 @@ export default function Home() {
       }
 
       const blob = await response.blob();
-      downloadBlob(blob);
+      await shareOrDownloadBlob(blob);
     } finally {
       setIsExporting(false);
     }
@@ -350,17 +309,12 @@ export default function Home() {
 
         lastMobileAutoScrollRole.current = role;
 
-        panel.style.scrollSnapType = "none";
-
         panel.scrollTo({
           left: Math.max(0, target.offsetLeft - 10),
           behavior: "smooth",
         });
 
-        window.setTimeout(() => {
-          panel.style.scrollSnapType = "x mandatory";
-          updateScrollProgress();
-        }, 420);
+        window.setTimeout(updateScrollProgress, 420);
       } else {
         target.scrollIntoView({
           behavior: "smooth",
@@ -373,7 +327,6 @@ export default function Home() {
   };
 
   const clearSelection = () => {
-    preparedMobileShareBlob.current = null;
     setSquad(Array(11).fill(null));
     setSelectedPlayer(null);
     setSelectedSlot(null);
@@ -398,7 +351,6 @@ export default function Home() {
   };
 
   const handleFieldClick = (index: number) => {
-    preparedMobileShareBlob.current = null;
     scrollToRole(getSlotRole(index));
 
     if (selectedPlayer) {
@@ -450,7 +402,6 @@ export default function Home() {
   };
 
   const handleInventoryClick = (player: Player) => {
-    preparedMobileShareBlob.current = null;
     if (swapSlot !== null) {
       setSquad((prev) => {
         const next = [...prev];
@@ -646,8 +597,7 @@ export default function Home() {
                     onClick={(e) => {
                       e.stopPropagation();
                       setFormationName(f);
-                      preparedMobileShareBlob.current = null;
-                      lastMobileAutoScrollRole.current = null;
+                                        lastMobileAutoScrollRole.current = null;
                       setSelectedSlot(null);
                       setSwapSlot(null);
                     }}
@@ -741,10 +691,12 @@ export default function Home() {
                         ? "0 10px 26px rgba(255,120,0,0.35)"
                         : "none",
                       scrollSnapAlign: isMobile
-                        ? (playerIndex % 3 === 0 ? "start" : "none")
+                        ? (playerIndex % 3 === 0 || p.id === 8 || p.id === 17 ? "start" : "none")
                         : "start",
                       scrollSnapStop:
-                        isMobile && playerIndex % 3 === 0 ? "always" : "normal",
+                        isMobile && (playerIndex % 3 === 0 || p.id === 8 || p.id === 17)
+                          ? "always"
+                          : "normal",
                     }}
                   >
                     <div
