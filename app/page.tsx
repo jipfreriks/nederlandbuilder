@@ -827,10 +827,6 @@ const styles: any = {
   formationButtons: {
     display: "flex",
     gap: 8,
-    padding: 6,
-    borderRadius: 16,
-    background: "rgba(0,0,0,0.18)",
-    backdropFilter: "blur(0.5px)",
   },
 
   formationButton: {
@@ -1132,8 +1128,6 @@ const styles: any = {
 
   mobileFormationButtons: {
     gap: 5,
-    padding: 5,
-    borderRadius: 13,
   },
 
   mobileFormationButton: {
