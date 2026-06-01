@@ -80,8 +80,8 @@ const HATO_LIST_SCALE = 1.15;
 const HATO_LIST_HOVER_SCALE = 1.24;
 
 // Noa Lang
-const NOA_LANG_SCALE = 0.92;
-const NOA_LANG_Y = "-10%";
+const NOA_LANG_SCALE = 1;
+const NOA_LANG_Y = "0";
 
 // Teun Koopmeiners
 const KOOPMEINERS_Y = "25%";
@@ -101,6 +101,7 @@ export default function Home() {
   const [hoveredFormation, setHoveredFormation] = useState<FormationName | null>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   const exportRef = useRef<HTMLDivElement | null>(null);
   const panelRef = useRef<HTMLDivElement | null>(null);
@@ -206,65 +207,112 @@ export default function Home() {
   };
 
   const exportPng = async () => {
+    if (isExporting) return;
+
+    setIsExporting(true);
+
     const fileName = `oranje-builder-${formationName}.png`;
-    const squadIds = squad.map((player) => player?.id ?? 0).join(",");
 
-    const response = await fetch("/api/export", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        formationName,
-        squadIds,
-      }),
-    });
+    const downloadBlob = (blob: Blob) => {
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.download = fileName;
+      link.href = url;
+      link.click();
+      URL.revokeObjectURL(url);
+    };
 
-    if (!response.ok) {
-      alert("Export mislukt. Probeer het opnieuw.");
-      return;
-    }
+    const shareOrDownloadBlob = async (blob: Blob) => {
+      const isMobileShare =
+        typeof window !== "undefined" &&
+        window.innerWidth <= 760 &&
+        typeof navigator !== "undefined" &&
+        typeof navigator.share === "function";
 
-    const blob = await response.blob();
+      if (isMobileShare) {
+        try {
+          const file = new File([blob], fileName, { type: "image/png" });
 
-    const isMobileShare =
-      typeof window !== "undefined" &&
-      window.innerWidth <= 760 &&
-      typeof navigator !== "undefined" &&
-      typeof navigator.share === "function";
+          if (
+            typeof navigator.canShare === "function" &&
+            navigator.canShare({ files: [file] })
+          ) {
+            await navigator.share({
+              title: "Mijn Oranje-opstelling",
+              text: "Mijn Oranje-opstelling",
+              files: [file],
+            });
+            return;
+          }
 
-    if (isMobileShare) {
-      try {
-        const file = new File([blob], fileName, { type: "image/png" });
-
-        if (
-          typeof navigator.canShare === "function" &&
-          navigator.canShare({ files: [file] })
-        ) {
           await navigator.share({
             title: "Mijn Oranje-opstelling",
             text: "Mijn Oranje-opstelling",
-            files: [file],
           });
           return;
+        } catch (error) {
+          if ((error as Error)?.name === "AbortError") return;
         }
-
-        await navigator.share({
-          title: "Mijn Oranje-opstelling",
-          text: "Mijn Oranje-opstelling",
-        });
-        return;
-      } catch (error) {
-        if ((error as Error)?.name === "AbortError") return;
       }
-    }
 
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.download = fileName;
-    link.href = url;
-    link.click();
-    URL.revokeObjectURL(url);
+      downloadBlob(blob);
+    };
+
+    try {
+      const isMobileDevice =
+        typeof window !== "undefined" && window.innerWidth <= 760;
+
+      // Mobiel: lokaal exporteren, zodat het native share-menu betrouwbaar opent.
+      if (isMobileDevice) {
+        if (!exportRef.current) return;
+
+        await preloadImages();
+
+        const canvas = await html2canvas(exportRef.current, {
+          backgroundColor: null,
+          scale: 3,
+          useCORS: true,
+          allowTaint: false,
+          imageTimeout: 15000,
+          logging: false,
+        });
+
+        await new Promise<void>((resolve) => {
+          canvas.toBlob(async (blob) => {
+            if (blob) {
+              await shareOrDownloadBlob(blob);
+            }
+            resolve();
+          }, "image/png", 1);
+        });
+
+        return;
+      }
+
+      // Desktop: server-export via /api/export.
+      const squadIds = squad.map((player) => player?.id ?? 0).join(",");
+
+      const response = await fetch("/api/export", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          formationName,
+          squadIds,
+        }),
+      });
+
+      if (!response.ok) {
+        alert("Export mislukt. Probeer het opnieuw.");
+        return;
+      }
+
+      const blob = await response.blob();
+      downloadBlob(blob);
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   const getSlotRole = (slotIndex: number): SlotRole => {
@@ -607,13 +655,19 @@ export default function Home() {
 
           <div style={{ ...styles.fieldActionControls, ...(isMobile ? styles.mobileFieldActionControls : {}) }}>
             <button
+              disabled={isExporting}
               onClick={(e) => {
                 e.stopPropagation();
                 exportPng();
               }}
-              style={{ ...styles.shareButton, ...(isMobile ? styles.mobileActionButton : {}) }}
+              style={{
+                ...styles.shareButton,
+                ...(isMobile ? styles.mobileActionButton : {}),
+                opacity: isExporting ? 0.72 : 1,
+                cursor: isExporting ? "wait" : "pointer",
+              }}
             >
-              deel ↗
+              {isExporting ? "bezig..." : "deel ↗"}
             </button>
 
             <button
