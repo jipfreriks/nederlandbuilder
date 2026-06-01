@@ -107,17 +107,17 @@ export default async function ExportPage({
               alt=""
               draggable={false}
               style={{
-                ...(player.id === 22 ? styles.noaCardPhoto : styles.cardPhoto),
-                objectPosition:
+                ...styles.cardPhoto,
+                top:
                   player.id === 26
-                    ? `center ${ROEFS_FIELD_Y}`
+                    ? ROEFS_FIELD_Y
                     : player.id === 12
-                    ? `center ${KOOPMEINERS_Y}`
-                    : "center 15%",
+                    ? KOOPMEINERS_Y
+                    : "0%",
                 transform:
                   player.id === 26
-                    ? `scale(${ROEFS_FIELD_SCALE})`
-                    : "scale(1)",
+                    ? `translateX(-50%) scale(${ROEFS_FIELD_SCALE})`
+                    : "translateX(-50%)",
               }}
             />
             <div style={styles.cardOverlay} />
@@ -257,26 +257,14 @@ const styles: Record<string, React.CSSProperties> = {
 
   cardPhoto: {
     position: "absolute",
-    inset: 0,
-    width: "100%",
+    left: "50%",
+    top: "0%",
+    width: "auto",
     height: "100%",
-    display: "block",
-    objectFit: "cover",
-    objectPosition: "center 15%",
-    imageRendering: "auto",
-    transformOrigin: "center center",
-  },
-
-  noaCardPhoto: {
-    position: "absolute",
-    left: 0,
-    top: 0,
-    width: "100%",
-    height: "auto",
-    minHeight: "100%",
+    minWidth: "100%",
     display: "block",
     objectFit: "initial",
-    objectPosition: "center 15%",
+    objectPosition: "initial",
     imageRendering: "auto",
     transformOrigin: "center center",
   },
