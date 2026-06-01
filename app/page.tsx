@@ -516,6 +516,18 @@ export default function Home() {
                 );
               })}
             </div>
+          </div>
+
+          <div style={{ ...styles.fieldActionControls, ...(isMobile ? styles.mobileFieldActionControls : {}) }}>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                exportPng();
+              }}
+              style={{ ...styles.shareButton, ...(isMobile ? styles.mobileActionButton : {}) }}
+            >
+              deel ↗
+            </button>
 
             <button
               onClick={(e) => {
@@ -525,16 +537,6 @@ export default function Home() {
               style={{ ...styles.clearButton, ...(isMobile ? styles.mobileActionButton : {}) }}
             >
               selectie legen
-            </button>
-
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                exportPng();
-              }}
-              style={{ ...styles.shareButton, ...(isMobile ? styles.mobileActionButton : {}) }}
-            >
-              deel ↗
             </button>
           </div>
 
@@ -607,6 +609,17 @@ export default function Home() {
               ▼
             </button>
           </div>
+
+          {isMobile && (
+            <div style={styles.mobileHorizontalScrollbar}>
+              <div
+                style={{
+                  ...styles.mobileHorizontalThumb,
+                  left: `${scrollProgress * 70}%`,
+                }}
+              />
+            </div>
+          )}
         </div>
       </div>
 
@@ -743,6 +756,17 @@ const styles: any = {
   formationControls: {
     position: "absolute",
     top: 0,
+    right: 0,
+    zIndex: 5,
+    display: "flex",
+    flexDirection: "column",
+    gap: 8,
+    alignItems: "stretch",
+  },
+
+  fieldActionControls: {
+    position: "absolute",
+    top: 54,
     right: 0,
     zIndex: 5,
     display: "flex",
@@ -1049,6 +1073,14 @@ const styles: any = {
     gap: 6,
   },
 
+  mobileFieldActionControls: {
+    top: "auto",
+    bottom: 8,
+    right: 0,
+    gap: 7,
+    alignItems: "stretch",
+  },
+
   mobileFormationButtons: {
     gap: 5,
     padding: 5,
@@ -1072,11 +1104,13 @@ const styles: any = {
     width: "100%",
     minHeight: 0,
     gap: 0,
+    paddingBottom: 14,
+    boxSizing: "border-box",
   },
 
   mobilePanel: {
     width: "100%",
-    height: "100%",
+    height: "calc(100% - 14px)",
     borderRadius: 18,
     padding: 10,
     overflowX: "auto",
@@ -1106,6 +1140,28 @@ const styles: any = {
 
   mobileCustomScrollbar: {
     display: "none",
+  },
+
+  mobileHorizontalScrollbar: {
+    position: "absolute",
+    left: 10,
+    right: 10,
+    bottom: 1,
+    height: 7,
+    borderRadius: 999,
+    background: "rgba(0,0,0,0.22)",
+    overflow: "hidden",
+  },
+
+  mobileHorizontalThumb: {
+    position: "absolute",
+    top: 0,
+    width: "30%",
+    height: "100%",
+    borderRadius: 999,
+    background: "#27418C",
+    boxShadow: "0 2px 10px rgba(0,0,0,0.28)",
+    transition: "left .12s linear",
   },
 
   mobileScrollButton: {
