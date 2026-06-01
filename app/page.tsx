@@ -518,8 +518,8 @@ export default function Home() {
             alt="DE18"
             style={{
               position: "absolute",
-              top: isMobile ? 4 : 6,
-              left: isMobile ? 4 : 6,
+              top: isMobile ? 8 : 12,
+              left: isMobile ? 8 : 12,
               width: isMobile ? 76 : 110,
               height: "auto",
               zIndex: 10,
@@ -737,13 +737,13 @@ const styles: any = {
     height: "100%",
     display: "flex",
     gap: 18,
-    overflow: "hidden",
+    overflow: "visible",
   },
 
   fieldArea: {
     flex: 1,
     height: "100%",
-    overflow: "hidden",
+    overflow: "visible",
     position: "relative",
   },
 
@@ -1008,6 +1008,7 @@ const styles: any = {
     position: "relative",
     display: "flex",
     gap: 10,
+    overflow: "visible",
   },
 
   panel: {
@@ -1154,8 +1155,9 @@ const styles: any = {
     width: "100%",
     minHeight: 0,
     gap: 0,
-    paddingBottom: 14,
+    paddingBottom: 18,
     boxSizing: "border-box",
+    overflow: "visible",
   },
 
   mobilePanel: {
