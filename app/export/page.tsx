@@ -63,11 +63,9 @@ const FORMATIONS: Record<FormationName, number[][]> = {
 const ROEFS_FIELD_SCALE = 1.15;
 const ROEFS_FIELD_Y = "-60%";
 
-// Noa Lang
 const NOA_LANG_SCALE = 1;
 const NOA_LANG_Y = "0";
 
-// Teun Koopmeiners
 const KOOPMEINERS_Y = "25%";
 // =====================================================
 
@@ -107,24 +105,25 @@ export default async function ExportPage({
       <div key={slotIndex} style={styles.slot}>
         {player && nameParts ? (
           <div style={styles.card}>
-            <div
+            <img
+              src={proxiedImage(player.image)}
+              alt=""
               style={{
                 ...styles.cardPhoto,
-                backgroundImage: `url("${proxiedImage(player.image)}")`,
-                backgroundPosition:
+                objectPosition:
                   player.id === 26
                     ? `center ${ROEFS_FIELD_Y}`
                     : player.id === 12
-                      ? `center ${KOOPMEINERS_Y}`
-                      : player.id === 22
-                        ? `center ${NOA_LANG_Y}`
-                        : "center 15%",
+                    ? `center ${KOOPMEINERS_Y}`
+                    : player.id === 22
+                    ? `center ${NOA_LANG_Y}`
+                    : "center 15%",
                 transform:
                   player.id === 26
                     ? `scale(${ROEFS_FIELD_SCALE})`
                     : player.id === 22
-                      ? `scale(${NOA_LANG_SCALE})`
-                      : "scale(1)",
+                    ? `scale(${NOA_LANG_SCALE})`
+                    : "scale(1)",
               }}
             />
             <div style={styles.cardOverlay} />
@@ -144,7 +143,9 @@ export default async function ExportPage({
     <>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Bungee&display=swap');
-        html, body {
+
+        html,
+        body {
           margin: 0;
           padding: 0;
           width: 760px;
@@ -155,11 +156,20 @@ export default async function ExportPage({
       `}</style>
 
       <main id="export-root" style={styles.page}>
-        <div style={styles.texture} />
-        <div style={styles.softVignette} />
+        <svg style={styles.textureSvg} viewBox="0 0 760 900" preserveAspectRatio="none" aria-hidden="true">
+          <defs>
+            <pattern id="diagonal-texture" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+              <rect width="2" height="8" fill="rgba(255,255,255,0.16)" />
+            </pattern>
+            <pattern id="diagonal-texture-soft" width="16" height="16" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+              <rect width="1" height="16" fill="rgba(255,255,255,0.07)" />
+            </pattern>
+          </defs>
+          <rect width="760" height="900" fill="url(#diagonal-texture)" />
+          <rect width="760" height="900" fill="url(#diagonal-texture-soft)" opacity="0.7" />
+        </svg>
 
         <img src="/logo.png" alt="DE18" style={styles.logo} />
-
 
         <div style={styles.formation}>
           {formation.map((row, rowIndex) => (
@@ -188,22 +198,13 @@ const styles: Record<string, React.CSSProperties> = {
     alignItems: "center",
   },
 
-  texture: {
+  textureSvg: {
     position: "absolute",
     inset: 0,
+    width: "100%",
+    height: "100%",
     zIndex: 1,
     pointerEvents: "none",
-    background:
-      "repeating-linear-gradient(45deg, rgba(255,255,255,0.12) 0px 2px, transparent 2px 8px)",
-  },
-
-  softVignette: {
-    position: "absolute",
-    inset: 0,
-    zIndex: 1,
-    pointerEvents: "none",
-    background:
-      "radial-gradient(circle at center, transparent 48%, rgba(0,0,0,0.12) 100%)",
   },
 
   logo: {
@@ -211,12 +212,11 @@ const styles: Record<string, React.CSSProperties> = {
     width: 118,
     height: "auto",
     zIndex: 20,
-    opacity: 0.92,
-    filter: "drop-shadow(0 4px 12px rgba(0,0,0,0.30))",
+    opacity: 0.94,
+    filter: "none",
     marginBottom: 10,
     flex: "0 0 auto",
   },
-
 
   formation: {
     position: "relative",
@@ -225,7 +225,7 @@ const styles: Record<string, React.CSSProperties> = {
     display: "flex",
     flexDirection: "column",
     justifyContent: "center",
-    gap: 10,
+    gap: 12,
     padding: 0,
     boxSizing: "border-box",
     flex: "0 0 auto",
@@ -234,14 +234,14 @@ const styles: Record<string, React.CSSProperties> = {
   row: {
     display: "flex",
     justifyContent: "center",
-    gap: 10,
+    gap: 12,
   },
 
   slot: {
-    width: 118,
-    height: 150,
+    width: 128,
+    height: 162,
     flex: "0 0 auto",
-    borderRadius: 16,
+    borderRadius: 18,
     overflow: "hidden",
     background: "rgba(0,0,0,0.16)",
   },
@@ -255,9 +255,13 @@ const styles: Record<string, React.CSSProperties> = {
 
   cardPhoto: {
     position: "absolute",
-    inset: 0,
-    backgroundSize: "cover",
-    backgroundRepeat: "no-repeat",
+    inset: "-2%",
+    width: "104%",
+    height: "104%",
+    objectFit: "cover",
+    objectPosition: "center 15%",
+    imageRendering: "auto",
+    transformOrigin: "center center",
   },
 
   cardOverlay: {
@@ -269,14 +273,15 @@ const styles: Record<string, React.CSSProperties> = {
 
   cardName: {
     position: "absolute",
-    bottom: 7,
+    bottom: 16,
     left: 0,
     width: "100%",
     textAlign: "center",
-    fontSize: 13,
+    fontSize: 15,
     textShadow: "0 2px 10px black",
     padding: "0 4px",
     pointerEvents: "none",
+    letterSpacing: 0,
   },
 
   twoLineName: {
