@@ -165,7 +165,6 @@ export default async function ExportPage({
           <rect width="760" height="900" fill="url(#diagonal-texture-soft)" opacity="0.7" />
         </svg>
 
-        <div style={styles.bottomPixelCover} />
         <img src="/logo.png" alt="DE18" style={styles.logo} />
 
         <div style={styles.formation}>
@@ -186,7 +185,8 @@ const styles: Record<string, React.CSSProperties> = {
     position: "relative",
     overflow: "clip",
     boxSizing: "border-box",
-    padding: "40px 18px",
+    padding: "40px 18px 39px",
+    marginBottom: -1,
     background: "linear-gradient(135deg,#ff7a18 0%,#ff4d00 55%,#9f2300 100%)",
     color: "white",
     fontFamily: "'Bungee', sans-serif",
@@ -206,16 +206,6 @@ const styles: Record<string, React.CSSProperties> = {
     pointerEvents: "none",
   },
 
-  bottomPixelCover: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: -3,
-    height: 8,
-    zIndex: 50,
-    pointerEvents: "none",
-    background: "#9f2300",
-  },
 
   logo: {
     position: "relative",
