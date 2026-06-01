@@ -95,12 +95,24 @@ export default function Home() {
     const panel = panelRef.current;
     if (!panel) return;
 
+    if (window.innerWidth <= 760) {
+      const maxScroll = panel.scrollWidth - panel.clientWidth;
+      setScrollProgress(maxScroll <= 0 ? 0 : panel.scrollLeft / maxScroll);
+      return;
+    }
+
     const maxScroll = panel.scrollHeight - panel.clientHeight;
     setScrollProgress(maxScroll <= 0 ? 0 : panel.scrollTop / maxScroll);
   };
 
   const scrollPanelBy = (amount: number) => {
     if (!panelRef.current) return;
+
+    if (window.innerWidth <= 760) {
+      panelRef.current.scrollBy({ left: amount, behavior: "smooth" });
+      return;
+    }
+
     panelRef.current.scrollBy({ top: amount, behavior: "smooth" });
   };
 
@@ -116,7 +128,13 @@ export default function Home() {
     const handleWheel = (e: WheelEvent) => {
       if (panelRef.current) {
         e.preventDefault();
-        panelRef.current.scrollTop += e.deltaY;
+
+        if (window.innerWidth <= 760) {
+          panelRef.current.scrollLeft += e.deltaY;
+        } else {
+          panelRef.current.scrollTop += e.deltaY;
+        }
+
         updateScrollProgress();
       }
     };
@@ -196,10 +214,22 @@ export default function Home() {
       role === "GK" ? 24 : role === "DEF" ? 1 : role === "MID" ? 8 : 17;
 
     requestAnimationFrame(() => {
-      playerRefs.current[targetId]?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
+      const target = playerRefs.current[targetId];
+      const panel = panelRef.current;
+      if (!target || !panel) return;
+
+      if (window.innerWidth <= 760) {
+        panel.scrollTo({
+          left: target.offsetLeft - panel.offsetLeft,
+          behavior: "smooth",
+        });
+      } else {
+        target.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }
+
       requestAnimationFrame(updateScrollProgress);
     });
   };
@@ -994,23 +1024,23 @@ const styles: any = {
   },
 
   mobileFieldArea: {
-    flex: "0 0 64%",
+    flex: "0 0 72%",
     width: "100%",
     minHeight: 0,
   },
 
   mobileFormation: {
-    gap: 8,
-    padding: "48px 8px 8px",
+    gap: 6,
+    padding: "48px 4px 8px",
   },
 
   mobileRow: {
-    gap: 8,
+    gap: 6,
   },
 
   mobileSlot: {
-    height: "calc((64vh - 88px) / 4)",
-    borderRadius: 14,
+    height: "clamp(68px, 22.5vw, 90px)",
+    borderRadius: 12,
   },
 
   mobileFormationControls: {
@@ -1038,33 +1068,44 @@ const styles: any = {
   },
 
   mobilePanelWrap: {
-    flex: "1 1 36%",
+    flex: "1 1 28%",
     width: "100%",
     minHeight: 0,
-    gap: 8,
+    gap: 0,
   },
 
   mobilePanel: {
-    width: "calc(100% - 28px)",
+    width: "100%",
     height: "100%",
     borderRadius: 18,
     padding: 10,
+    overflowX: "auto",
+    overflowY: "hidden",
+    scrollSnapType: "x mandatory",
+    scrollPaddingLeft: 10,
+    WebkitOverflowScrolling: "touch",
   },
 
   mobileGrid: {
-    gridTemplateColumns: "1fr 1fr 1fr",
+    display: "flex",
+    gridTemplateColumns: "none",
+    gridAutoFlow: "column",
     gap: 10,
+    height: "100%",
+    width: "max-content",
   },
 
   mobileInventoryCard: {
-    height: "calc((36vh - 64px) / 2)",
-    minHeight: 96,
+    flex: "0 0 calc((100vw - 60px) / 3)",
+    width: "calc((100vw - 60px) / 3)",
+    height: "100%",
+    minHeight: 0,
     borderRadius: 14,
+    scrollSnapAlign: "start",
   },
 
   mobileCustomScrollbar: {
-    width: 18,
-    gap: 6,
+    display: "none",
   },
 
   mobileScrollButton: {
