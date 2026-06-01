@@ -235,16 +235,16 @@ export default function Home() {
             navigator.canShare({ files: [file] })
           ) {
             await navigator.share({
-              title: "Mijn Oranje-opstelling",
-              text: "Mijn Oranje-opstelling",
+              title: "Mijn Oranje-opstelling!",
+              text: "Mijn Oranje-opstelling! 🦁 Via de18miljoenstebondscoach.nl",
               files: [file],
             });
             return;
           }
 
           await navigator.share({
-            title: "Mijn Oranje-opstelling",
-            text: "Mijn Oranje-opstelling",
+            title: "Mijn Oranje-opstelling!",
+            text: "Mijn Oranje-opstelling! 🦁 Via de18miljoenstebondscoach.nl",
           });
           return;
         } catch (error) {

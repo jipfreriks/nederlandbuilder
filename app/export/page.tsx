@@ -102,12 +102,11 @@ export default async function ExportPage({
       <div key={slotIndex} style={styles.slot}>
         {player && nameParts ? (
           <div style={styles.card}>
-            <img
-              src={proxiedImage(player.image)}
-              alt=""
+            <div
               style={{
                 ...styles.cardPhoto,
-                objectPosition:
+                backgroundImage: `url("${proxiedImage(player.image)}")`,
+                backgroundPosition:
                   player.id === 26
                     ? `center ${ROEFS_FIELD_Y}`
                     : player.id === 12
@@ -146,10 +145,6 @@ export default async function ExportPage({
           overflow: hidden;
           background: #ff4d00;
         }
-
-        * {
-          box-sizing: border-box;
-        }
       `}</style>
 
       <main id="export-root" style={styles.page}>
@@ -184,7 +179,7 @@ const styles: Record<string, React.CSSProperties> = {
   page: {
     width: 760,
     position: "relative",
-    overflow: "clip",
+    overflow: "hidden",
     boxSizing: "border-box",
     padding: "40px 18px",
     background: "linear-gradient(135deg,#ff7a18,#ff4d00,#6b0000)",
@@ -193,15 +188,13 @@ const styles: Record<string, React.CSSProperties> = {
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
-    border: "0 solid transparent",
-    outline: "1px solid #ff4d00",
   },
 
   textureSvg: {
     position: "absolute",
-    inset: -2,
-    width: "calc(100% + 4px)",
-    height: "calc(100% + 4px)",
+    inset: 0,
+    width: "100%",
+    height: "100%",
     zIndex: 1,
     pointerEvents: "none",
   },
@@ -255,11 +248,9 @@ const styles: Record<string, React.CSSProperties> = {
   cardPhoto: {
     position: "absolute",
     inset: 0,
-    width: "100%",
-    height: "100%",
-    display: "block",
-    objectFit: "cover",
-    objectPosition: "center 15%",
+    backgroundSize: "cover",
+    backgroundPosition: "center 15%",
+    backgroundRepeat: "no-repeat",
     imageRendering: "auto",
     transformOrigin: "center center",
   },
