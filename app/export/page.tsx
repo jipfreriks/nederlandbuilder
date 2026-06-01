@@ -64,8 +64,8 @@ const ROEFS_FIELD_SCALE = 1.15;
 const ROEFS_FIELD_Y = "-60%";
 
 // Noa Lang
-const NOA_LANG_SCALE = 0.92;
-const NOA_LANG_Y = "-10%";
+const NOA_LANG_SCALE = 1;
+const NOA_LANG_Y = "0";
 
 // Teun Koopmeiners
 const KOOPMEINERS_Y = "25%";

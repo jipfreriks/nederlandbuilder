@@ -1,6 +1,5 @@
 "use client";
 
-import html2canvas from "html2canvas";
 import { useEffect, useRef, useState } from "react";
 
 type Player = {
@@ -212,17 +211,27 @@ export default function Home() {
     setIsExporting(true);
 
     const fileName = `oranje-builder-${formationName}.png`;
+    const squadIds = squad.map((player) => player?.id ?? 0).join(",");
 
-    const downloadBlob = (blob: Blob) => {
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.download = fileName;
-      link.href = url;
-      link.click();
-      URL.revokeObjectURL(url);
-    };
+    try {
+      const response = await fetch("/api/export", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          formationName,
+          squadIds,
+        }),
+      });
 
-    const shareOrDownloadBlob = async (blob: Blob) => {
+      if (!response.ok) {
+        alert("Export mislukt. Probeer het opnieuw.");
+        return;
+      }
+
+      const blob = await response.blob();
+
       const isMobileShare =
         typeof window !== "undefined" &&
         window.innerWidth <= 760 &&
@@ -255,61 +264,12 @@ export default function Home() {
         }
       }
 
-      downloadBlob(blob);
-    };
-
-    try {
-      const isMobileDevice =
-        typeof window !== "undefined" && window.innerWidth <= 760;
-
-      // Mobiel: lokaal exporteren, zodat het native share-menu betrouwbaar opent.
-      if (isMobileDevice) {
-        if (!exportRef.current) return;
-
-        await preloadImages();
-
-        const canvas = await html2canvas(exportRef.current, {
-          backgroundColor: null,
-          scale: 3,
-          useCORS: true,
-          allowTaint: false,
-          imageTimeout: 15000,
-          logging: false,
-        });
-
-        await new Promise<void>((resolve) => {
-          canvas.toBlob(async (blob) => {
-            if (blob) {
-              await shareOrDownloadBlob(blob);
-            }
-            resolve();
-          }, "image/png", 1);
-        });
-
-        return;
-      }
-
-      // Desktop: server-export via /api/export.
-      const squadIds = squad.map((player) => player?.id ?? 0).join(",");
-
-      const response = await fetch("/api/export", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          formationName,
-          squadIds,
-        }),
-      });
-
-      if (!response.ok) {
-        alert("Export mislukt. Probeer het opnieuw.");
-        return;
-      }
-
-      const blob = await response.blob();
-      downloadBlob(blob);
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.download = fileName;
+      link.href = url;
+      link.click();
+      URL.revokeObjectURL(url);
     } finally {
       setIsExporting(false);
     }
