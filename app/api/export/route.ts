@@ -45,10 +45,6 @@ export async function POST(req: Request) {
         "--disable-web-security",
         "--no-sandbox",
         "--disable-setuid-sandbox",
-        "--disable-dev-shm-usage",
-        "--disable-gpu",
-        "--disable-extensions",
-        "--single-process",
       ],
       defaultViewport: {
         width: 760,
@@ -63,7 +59,7 @@ export async function POST(req: Request) {
 
     await page.goto(exportUrl, {
       waitUntil: "domcontentloaded",
-      timeout: 20000,
+      timeout: 30000,
     });
 
     await page.evaluate(async () => {
@@ -80,13 +76,13 @@ export async function POST(req: Request) {
             });
           })
         ),
-        new Promise<void>((resolve) => window.setTimeout(resolve, 2500)),
+        new Promise<void>((resolve) => window.setTimeout(resolve, 3500)),
       ]);
 
       if ("fonts" in document) {
         await Promise.race([
           document.fonts.ready,
-          new Promise<void>((resolve) => window.setTimeout(resolve, 1200)),
+          new Promise<void>((resolve) => window.setTimeout(resolve, 1500)),
         ]);
       }
     });
@@ -99,7 +95,6 @@ export async function POST(req: Request) {
 
     const screenshot = await element.screenshot({
       type: "png",
-      optimizeForSpeed: true,
     });
 
     return new Response(new Uint8Array(screenshot), {
