@@ -403,7 +403,7 @@ export default function Home() {
   };
 
   const renderPitchLines = () => (
-    <div style={styles.pitchPerspective}>
+    <div style={{ ...styles.pitchPerspective, ...(isMobile ? styles.mobilePitchPerspective : {}) }}>
       <svg
         viewBox="0 0 100 100"
         preserveAspectRatio="none"
@@ -1096,6 +1096,11 @@ const styles: any = {
     flex: "0 0 72%",
     width: "100%",
     minHeight: 0,
+  },
+
+  mobilePitchPerspective: {
+    top: "12%",
+    bottom: "12%",
   },
 
   mobileFormation: {
