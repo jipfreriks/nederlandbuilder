@@ -102,6 +102,7 @@ export default function Home() {
   const exportRef = useRef<HTMLDivElement | null>(null);
   const panelRef = useRef<HTMLDivElement | null>(null);
   const playerRefs = useRef<Record<number, HTMLDivElement | null>>({});
+  const lastMobileAutoScrollRole = useRef<SlotRole | null>(null);
   const formation = FORMATIONS[formationName];
 
   useEffect(() => {
