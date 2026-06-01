@@ -77,15 +77,14 @@ const ROEFS_LIST_HOVER_SCALE = 1.30;
 
 // Jorrel Hato
 const HATO_LIST_SCALE = 1.15;
-const HATO_FIELD_SCALE = 1.15;
 const HATO_LIST_HOVER_SCALE = 1.24;
 
 // Noa Lang
-const NOA_LANG_SCALE = 1;
-const NOA_LANG_Y = "0";
+const NOA_LANG_SCALE = 0.92;
+const NOA_LANG_Y = "-10%";
 
 // Teun Koopmeiners
-const KOOPMEINERS_Y = "0";
+const KOOPMEINERS_Y = "25%";
 // =====================================================
 
 const TRASH_CURSOR =
@@ -207,27 +206,26 @@ export default function Home() {
   };
 
   const exportPng = async () => {
-    if (!exportRef.current) return;
+    const fileName = `oranje-builder-${formationName}.png`;
+    const squadIds = squad.map((player) => player?.id ?? 0).join(",");
 
-    await preloadImages();
-
-    const canvas = await html2canvas(exportRef.current, {
-      backgroundColor: null,
-      scale: 3,
-      useCORS: true,
-      allowTaint: false,
-      imageTimeout: 15000,
-      logging: false,
+    const response = await fetch("/api/export", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        formationName,
+        squadIds,
+      }),
     });
 
-    const fileName = `oranje-builder-${formationName}.png`;
+    if (!response.ok) {
+      alert("Export mislukt. Probeer het opnieuw.");
+      return;
+    }
 
-    const downloadPng = () => {
-      const link = document.createElement("a");
-      link.download = fileName;
-      link.href = canvas.toDataURL("image/png", 1);
-      link.click();
-    };
+    const blob = await response.blob();
 
     const isMobileShare =
       typeof window !== "undefined" &&
@@ -236,43 +234,37 @@ export default function Home() {
       typeof navigator.share === "function";
 
     if (isMobileShare) {
-      canvas.toBlob(async (blob) => {
-        if (!blob) {
-          downloadPng();
+      try {
+        const file = new File([blob], fileName, { type: "image/png" });
+
+        if (
+          typeof navigator.canShare === "function" &&
+          navigator.canShare({ files: [file] })
+        ) {
+          await navigator.share({
+            title: "Mijn Oranje-opstelling",
+            text: "Mijn Oranje-opstelling",
+            files: [file],
+          });
           return;
         }
 
-        const file = new File([blob], fileName, { type: "image/png" });
-        const shareData = {
+        await navigator.share({
           title: "Mijn Oranje-opstelling",
           text: "Mijn Oranje-opstelling",
-          files: [file],
-        };
-
-        try {
-          if (
-            typeof navigator.canShare === "function" &&
-            navigator.canShare({ files: [file] })
-          ) {
-            await navigator.share(shareData);
-            return;
-          }
-
-          await navigator.share({
-            title: shareData.title,
-            text: shareData.text,
-          });
-        } catch (error) {
-          if ((error as Error)?.name !== "AbortError") {
-            downloadPng();
-          }
-        }
-      }, "image/png", 1);
-
-      return;
+        });
+        return;
+      } catch (error) {
+        if ((error as Error)?.name === "AbortError") return;
+      }
     }
 
-    downloadPng();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.download = fileName;
+    link.href = url;
+    link.click();
+    URL.revokeObjectURL(url);
   };
 
   const getSlotRole = (slotIndex: number): SlotRole => {
