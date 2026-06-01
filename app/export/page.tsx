@@ -183,25 +183,25 @@ const styles: Record<string, React.CSSProperties> = {
   page: {
     width: 760,
     position: "relative",
-    overflow: "clip",
+    overflow: "hidden",
     boxSizing: "border-box",
-    padding: "40px 18px 39px",
-    marginBottom: -1,
-    background: "linear-gradient(135deg,#ff7a18 0%,#ff4d00 55%,#9f2300 100%)",
+    padding: "40px 18px",
+    
+    background: "linear-gradient(135deg,#ff7a18,#ff4d00,#6b0000)",
     color: "white",
     fontFamily: "'Bungee', sans-serif",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
-    outline: "2px solid #ff4d00",
-    outlineOffset: "-1px",
+    
+    
   },
 
   textureSvg: {
     position: "absolute",
-    inset: -2,
-    width: "calc(100% + 4px)",
-    height: "calc(100% + 4px)",
+    inset: 0,
+    width: "100%",
+    height: "100%",
     zIndex: 1,
     pointerEvents: "none",
   },

@@ -334,7 +334,7 @@ export default function Home() {
       }
 
       const canvas = await html2canvas(exportRoot, {
-        backgroundColor: null,
+        backgroundColor: "#ff4d00",
         scale: 4,
         useCORS: true,
         allowTaint: false,
