@@ -102,37 +102,24 @@ export default async function ExportPage({
       <div key={slotIndex} style={styles.slot}>
         {player && nameParts ? (
           <div style={styles.card}>
-            {player.id === 22 ? (
-              <div
-                style={{
-                  ...styles.cardPhoto,
-                  backgroundImage: `url("${proxiedImage(player.image)}")`,
-                  backgroundSize: "cover",
-                  backgroundPosition: "center 15%",
-                  backgroundRepeat: "no-repeat",
-                  transform: "scale(1)",
-                }}
-              />
-            ) : (
-              <img
-                src={proxiedImage(player.image)}
-                alt=""
-                draggable={false}
-                style={{
-                  ...styles.cardPhoto,
-                  objectPosition:
-                    player.id === 26
-                      ? `center ${ROEFS_FIELD_Y}`
-                      : player.id === 12
-                      ? `center ${KOOPMEINERS_Y}`
-                      : "center 15%",
-                  transform:
-                    player.id === 26
-                      ? `scale(${ROEFS_FIELD_SCALE})`
-                      : "scale(1)",
-                }}
-              />
-            )}
+            <img
+              src={proxiedImage(player.image)}
+              alt=""
+              draggable={false}
+              style={{
+                ...(player.id === 22 ? styles.noaCardPhoto : styles.cardPhoto),
+                objectPosition:
+                  player.id === 26
+                    ? `center ${ROEFS_FIELD_Y}`
+                    : player.id === 12
+                    ? `center ${KOOPMEINERS_Y}`
+                    : "center 15%",
+                transform:
+                  player.id === 26
+                    ? `scale(${ROEFS_FIELD_SCALE})`
+                    : "scale(1)",
+              }}
+            />
             <div style={styles.cardOverlay} />
             <div style={{ ...styles.cardName, ...styles.twoLineName }}>
               <span>{nameParts.first}</span>
@@ -275,6 +262,20 @@ const styles: Record<string, React.CSSProperties> = {
     height: "100%",
     display: "block",
     objectFit: "cover",
+    objectPosition: "center 15%",
+    imageRendering: "auto",
+    transformOrigin: "center center",
+  },
+
+  noaCardPhoto: {
+    position: "absolute",
+    left: 0,
+    top: 0,
+    width: "100%",
+    height: "auto",
+    minHeight: "100%",
+    display: "block",
+    objectFit: "initial",
     objectPosition: "center 15%",
     imageRendering: "auto",
     transformOrigin: "center center",
