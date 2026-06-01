@@ -45,11 +45,15 @@ export async function POST(req: Request) {
         "--disable-web-security",
         "--no-sandbox",
         "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+        "--disable-gpu",
+        "--disable-extensions",
+        "--single-process",
       ],
       defaultViewport: {
         width: 760,
         height: 950,
-        deviceScaleFactor: 2,
+        deviceScaleFactor: 1.5,
       },
       executablePath: await chromium.executablePath(CHROMIUM_PACK_URL),
       headless: true,
@@ -58,26 +62,32 @@ export async function POST(req: Request) {
     const page = await browser.newPage();
 
     await page.goto(exportUrl, {
-      waitUntil: "networkidle0",
-      timeout: 30000,
+      waitUntil: "domcontentloaded",
+      timeout: 20000,
     });
 
     await page.evaluate(async () => {
       const images = Array.from(document.images);
 
-      await Promise.all(
-        images.map((img) => {
-          if (img.complete) return Promise.resolve();
+      await Promise.race([
+        Promise.all(
+          images.map((img) => {
+            if (img.complete) return Promise.resolve();
 
-          return new Promise<void>((resolve) => {
-            img.onload = () => resolve();
-            img.onerror = () => resolve();
-          });
-        })
-      );
+            return new Promise<void>((resolve) => {
+              img.onload = () => resolve();
+              img.onerror = () => resolve();
+            });
+          })
+        ),
+        new Promise<void>((resolve) => window.setTimeout(resolve, 2500)),
+      ]);
 
       if ("fonts" in document) {
-        await document.fonts.ready;
+        await Promise.race([
+          document.fonts.ready,
+          new Promise<void>((resolve) => window.setTimeout(resolve, 1200)),
+        ]);
       }
     });
 
@@ -89,6 +99,7 @@ export async function POST(req: Request) {
 
     const screenshot = await element.screenshot({
       type: "png",
+      optimizeForSpeed: true,
     });
 
     return new Response(new Uint8Array(screenshot), {
