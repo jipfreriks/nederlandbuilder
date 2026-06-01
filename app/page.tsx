@@ -618,7 +618,7 @@ export default function Home() {
             onScroll={updateScrollProgress}
           >
             <div style={{ ...styles.grid, ...(isMobile ? styles.mobileGrid : {}) }}>
-              {PLAYERS.map((p) => {
+              {PLAYERS.map((p, playerIndex) => {
                 const active = selectedPlayer?.id === p.id;
                 const hover = hoveredPlayer === p.id;
 
@@ -645,7 +645,11 @@ export default function Home() {
                         : hover
                         ? "0 10px 26px rgba(255,120,0,0.35)"
                         : "none",
-                      scrollSnapAlign: "start",
+                      scrollSnapAlign: isMobile
+                        ? (playerIndex % 3 === 0 ? "start" : "none")
+                        : "start",
+                      scrollSnapStop:
+                        isMobile && playerIndex % 3 === 0 ? "always" : "normal",
                     }}
                   >
                     <div
