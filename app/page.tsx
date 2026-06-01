@@ -203,6 +203,14 @@ export default function Home() {
     );
   };
 
+  const copyMobileShareText = async () => {
+    try {
+      if (typeof navigator !== "undefined" && navigator.clipboard) {
+        await navigator.clipboard.writeText("Mijn Oranje-opstelling! 🦁 Via de18miljoenstebondscoach.nl");
+      }
+    } catch {}
+  };
+
   const exportPng = async () => {
     if (isExporting) return;
 
@@ -235,6 +243,7 @@ export default function Home() {
             typeof navigator.canShare === "function" &&
             navigator.canShare({ files: [file] })
           ) {
+            await copyMobileShareText();
             await navigator.share({
               title: "Mijn Oranje-opstelling!",
               text: "Mijn Oranje-opstelling! 🦁 Via de18miljoenstebondscoach.nl",
@@ -243,6 +252,7 @@ export default function Home() {
             return;
           }
 
+          await copyMobileShareText();
           await navigator.share({
             title: "Mijn Oranje-opstelling!",
             text: "Mijn Oranje-opstelling! 🦁 Via de18miljoenstebondscoach.nl",
@@ -749,8 +759,13 @@ export default function Home() {
                         : hover
                         ? "0 10px 26px rgba(255,120,0,0.35)"
                         : "none",
-                      scrollSnapAlign: "start",
-                      scrollSnapStop: "always",
+                      scrollSnapAlign: isMobile
+                        ? (playerIndex % 3 === 0 || playerIndex === 10 || playerIndex === 19 ? "start" : "none")
+                        : "start",
+                      scrollSnapStop:
+                        isMobile && (playerIndex % 3 === 0 || playerIndex === 10 || playerIndex === 19)
+                          ? "always"
+                          : "normal",
                     }}
                   >
                     <div
@@ -1295,6 +1310,7 @@ const styles: any = {
     overflowY: "hidden",
     scrollSnapType: "x mandatory",
     scrollPaddingLeft: 10,
+    scrollBehavior: "smooth",
     WebkitOverflowScrolling: "touch",
   },
 
@@ -1313,8 +1329,8 @@ const styles: any = {
     height: "100%",
     minHeight: 0,
     borderRadius: 14,
-    scrollSnapAlign: "start",
-    scrollSnapStop: "always",
+    scrollSnapAlign: "none",
+    scrollSnapStop: "normal",
   },
 
   mobileCustomScrollbar: {
