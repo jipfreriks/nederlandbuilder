@@ -102,24 +102,37 @@ export default async function ExportPage({
       <div key={slotIndex} style={styles.slot}>
         {player && nameParts ? (
           <div style={styles.card}>
-            <img
-              src={proxiedImage(player.image)}
-              alt=""
-              draggable={false}
-              style={{
-                ...styles.cardPhoto,
-                objectPosition:
-                  player.id === 26
-                    ? `center ${ROEFS_FIELD_Y}`
-                    : player.id === 12
-                    ? `center ${KOOPMEINERS_Y}`
-                    : "center 15%",
-                transform:
-                  player.id === 26
-                    ? `scale(${ROEFS_FIELD_SCALE})`
-                    : "scale(1)",
-              }}
-            />
+            {player.id === 22 ? (
+              <div
+                style={{
+                  ...styles.cardPhoto,
+                  backgroundImage: `url("${proxiedImage(player.image)}")`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center 15%",
+                  backgroundRepeat: "no-repeat",
+                  transform: "scale(1)",
+                }}
+              />
+            ) : (
+              <img
+                src={proxiedImage(player.image)}
+                alt=""
+                draggable={false}
+                style={{
+                  ...styles.cardPhoto,
+                  objectPosition:
+                    player.id === 26
+                      ? `center ${ROEFS_FIELD_Y}`
+                      : player.id === 12
+                      ? `center ${KOOPMEINERS_Y}`
+                      : "center 15%",
+                  transform:
+                    player.id === 26
+                      ? `scale(${ROEFS_FIELD_SCALE})`
+                      : "scale(1)",
+                }}
+              />
+            )}
             <div style={styles.cardOverlay} />
             <div style={{ ...styles.cardName, ...styles.twoLineName }}>
               <span>{nameParts.first}</span>
@@ -276,11 +289,11 @@ const styles: Record<string, React.CSSProperties> = {
 
   cardName: {
     position: "absolute",
-    bottom: 11,
+    bottom: 15,
     left: 0,
     width: "100%",
     textAlign: "center",
-    fontSize: 11,
+    fontSize: 14,
     textShadow: "0 2px 10px black",
     padding: "0 4px",
     pointerEvents: "none",
