@@ -128,7 +128,7 @@ export default function ExportPage() {
           margin: 0;
           padding: 0;
           width: 760px;
-          height: 950px;
+          min-height: 100%;
           overflow: hidden;
           background: #ff4d00;
         }
@@ -156,13 +156,16 @@ export default function ExportPage() {
 const styles: Record<string, React.CSSProperties> = {
   page: {
     width: 760,
-    height: 950,
     position: "relative",
     overflow: "hidden",
     boxSizing: "border-box",
+    padding: "40px 18px",
     background: "linear-gradient(135deg,#ff7a18,#ff4d00,#6b0000)",
     color: "white",
     fontFamily: "'Bungee', sans-serif",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
   },
 
   texture: {
@@ -184,14 +187,14 @@ const styles: Record<string, React.CSSProperties> = {
   },
 
   logo: {
-    position: "absolute",
-    top: 10,
-    right: 10,
-    width: 70,
+    position: "relative",
+    width: 118,
     height: "auto",
     zIndex: 20,
     opacity: 0.92,
     filter: "drop-shadow(0 4px 12px rgba(0,0,0,0.30))",
+    marginBottom: 10,
+    flex: "0 0 auto",
   },
 
 
@@ -199,19 +202,19 @@ const styles: Record<string, React.CSSProperties> = {
     position: "relative",
     zIndex: 10,
     width: "100%",
-    height: "100%",
     display: "flex",
     flexDirection: "column",
     justifyContent: "center",
-    gap: 8,
-    padding: "18px",
+    gap: 10,
+    padding: 0,
     boxSizing: "border-box",
+    flex: "0 0 auto",
   },
 
   row: {
     display: "flex",
     justifyContent: "center",
-    gap: 9,
+    gap: 10,
   },
 
   slot: {

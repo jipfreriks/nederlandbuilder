@@ -77,7 +77,15 @@ const ROEFS_LIST_HOVER_SCALE = 1.30;
 
 // Jorrel Hato
 const HATO_LIST_SCALE = 1.15;
+const HATO_FIELD_SCALE = 1.15;
 const HATO_LIST_HOVER_SCALE = 1.24;
+
+// Noa Lang
+const NOA_LANG_SCALE = 1;
+const NOA_LANG_Y = "0";
+
+// Teun Koopmeiners
+const KOOPMEINERS_Y = "0";
 // =====================================================
 
 const TRASH_CURSOR =
@@ -480,8 +488,20 @@ export default function Home() {
                 ...styles.cardPhoto,
                 ...(exportMode ? styles.exportCardPhoto : {}),
                 backgroundImage: `url("${proxiedImage(player.image)}")`,
-                backgroundPosition: player.id === 26 ? `center ${ROEFS_FIELD_Y}` : styles.cardPhoto.backgroundPosition,
-                transform: player.id === 26 ? (hover ? `scale(${ROEFS_FIELD_HOVER_SCALE})` : `scale(${ROEFS_FIELD_SCALE})`) : (hover ? "scale(1.08)" : "scale(1)"),
+                backgroundPosition:
+                  player.id === 26
+                    ? `center ${ROEFS_FIELD_Y}`
+                    : player.id === 12
+                    ? `center ${KOOPMEINERS_Y}`
+                    : player.id === 22
+                    ? `center ${NOA_LANG_Y}`
+                    : styles.cardPhoto.backgroundPosition,
+                transform:
+                  player.id === 26
+                    ? (hover ? `scale(${ROEFS_FIELD_HOVER_SCALE})` : `scale(${ROEFS_FIELD_SCALE})`)
+                    : player.id === 22
+                    ? (hover ? `scale(${NOA_LANG_SCALE + 0.08})` : `scale(${NOA_LANG_SCALE})`)
+                    : (hover ? "scale(1.08)" : "scale(1)"),
               }}
             />
             <div style={styles.cardOverlay} />
