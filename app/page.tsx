@@ -3,6 +3,8 @@
 import html2canvas from "html2canvas";
 import { useEffect, useRef, useState } from "react";
 
+import { Analytics } from "@vercel/analytics/next"
+
 type Player = {
   id: number;
   name: string;
