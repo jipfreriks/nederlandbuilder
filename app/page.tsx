@@ -106,10 +106,6 @@ export default function Home() {
   const exportRef = useRef<HTMLDivElement | null>(null);
   const panelRef = useRef<HTMLDivElement | null>(null);
   const playerRefs = useRef<Record<number, HTMLDivElement | null>>({});
-  const lastMobileAutoScrollRole = useRef<SlotRole | null>(null);
-  const preparedMobileShareBlob = useRef<Blob | null>(null);
-  const preparedMobileShareKey = useRef<string>("");
-  const [isPreparingShare, setIsPreparingShare] = useState(false);
   const formation = FORMATIONS[formationName];
 
   useEffect(() => {
@@ -196,30 +192,6 @@ export default function Home() {
     }
   }, [selectedPlayer, selectedSlot]);
 
-  useEffect(() => {
-    if (!isMobile) return;
-
-    preparedMobileShareBlob.current = null;
-    preparedMobileShareKey.current = "";
-    setIsPreparingShare(true);
-
-    const timeout = window.setTimeout(async () => {
-      try {
-        const key = getExportKey();
-        const blob = await fetchExportBlob();
-        preparedMobileShareBlob.current = blob;
-        preparedMobileShareKey.current = key;
-      } catch {
-        preparedMobileShareBlob.current = null;
-        preparedMobileShareKey.current = "";
-      } finally {
-        setIsPreparingShare(false);
-      }
-    }, 900);
-
-    return () => window.clearTimeout(timeout);
-  }, [formationName, squad, isMobile]);
-
   const preloadImages = async () => {
     await Promise.all(
       PLAYERS.map(
@@ -234,94 +206,149 @@ export default function Home() {
     );
   };
 
-  const getExportKey = () =>
-    `${formationName}:${squad.map((player) => player?.id ?? 0).join(",")}`;
-
-  const fetchExportBlob = async () => {
-    const squadIds = squad.map((player) => player?.id ?? 0).join(",");
-
-    const response = await fetch("/api/export", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        formationName,
-        squadIds,
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error("Export mislukt");
-    }
-
-    return response.blob();
-  };
-
-  const shareBlob = async (blob: Blob) => {
-    const fileName = `oranje-builder-${formationName}.png`;
-    const file = new File([blob], fileName, { type: "image/png" });
-
-    if (
-      typeof navigator !== "undefined" &&
-      typeof navigator.share === "function"
-    ) {
-      await navigator.share({
-        title: "Mijn Oranje-opstelling",
-        text: "Mijn Oranje-opstelling",
-        files: [file],
-      });
-      return;
-    }
-
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.download = fileName;
-    link.href = url;
-    link.click();
-    URL.revokeObjectURL(url);
-  };
-
   const exportPng = async () => {
     if (isExporting) return;
 
     setIsExporting(true);
 
-    const isMobileShare =
-      typeof window !== "undefined" &&
-      window.innerWidth <= 760 &&
-      typeof navigator !== "undefined" &&
-      typeof navigator.share === "function";
+    const fileName = `oranje-builder-${formationName}.png`;
+    const squadIds = squad.map((player) => player?.id ?? 0).join(",");
 
-    const currentKey = getExportKey();
+    const downloadBlob = (blob: Blob) => {
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.download = fileName;
+      link.href = url;
+      link.click();
+      URL.revokeObjectURL(url);
+    };
 
-    try {
+    const shareOrDownloadBlob = async (blob: Blob) => {
+      const isMobileShare =
+        typeof window !== "undefined" &&
+        window.innerWidth <= 760 &&
+        typeof navigator !== "undefined" &&
+        typeof navigator.share === "function";
+
       if (isMobileShare) {
-        if (
-          preparedMobileShareBlob.current &&
-          preparedMobileShareKey.current === currentKey
-        ) {
-          await shareBlob(preparedMobileShareBlob.current);
+        try {
+          const file = new File([blob], fileName, { type: "image/png" });
+
+          if (
+            typeof navigator.canShare === "function" &&
+            navigator.canShare({ files: [file] })
+          ) {
+            await navigator.share({
+              title: "Mijn Oranje-opstelling",
+              text: "Mijn Oranje-opstelling",
+              files: [file],
+            });
+            return;
+          }
+
+          await navigator.share({
+            title: "Mijn Oranje-opstelling",
+            text: "Mijn Oranje-opstelling",
+          });
           return;
+        } catch (error) {
+          if ((error as Error)?.name === "AbortError") return;
         }
-
-        setIsPreparingShare(true);
-
-        const blob = await fetchExportBlob();
-        preparedMobileShareBlob.current = blob;
-        preparedMobileShareKey.current = currentKey;
-
-        alert("Export staat klaar. Tik nog één keer op deel om het share-menu te openen.");
-        return;
       }
 
-      const blob = await fetchExportBlob();
-      await shareBlob(blob);
+      downloadBlob(blob);
+    };
+
+    const waitForIframe = (iframe: HTMLIFrameElement) =>
+      new Promise<void>((resolve, reject) => {
+        const timeout = window.setTimeout(() => {
+          reject(new Error("Exportpagina laden duurde te lang"));
+        }, 10000);
+
+        iframe.onload = () => {
+          window.clearTimeout(timeout);
+          resolve();
+        };
+
+        iframe.onerror = () => {
+          window.clearTimeout(timeout);
+          reject(new Error("Exportpagina kon niet laden"));
+        };
+      });
+
+    try {
+      const iframe = document.createElement("iframe");
+
+      iframe.src = `/export?formation=${formationName}&squad=${encodeURIComponent(
+        squadIds
+      )}&t=${Date.now()}`;
+
+      iframe.style.position = "fixed";
+      iframe.style.left = "-10000px";
+      iframe.style.top = "0";
+      iframe.style.width = "760px";
+      iframe.style.height = "1200px";
+      iframe.style.border = "0";
+      iframe.style.opacity = "0";
+      iframe.style.pointerEvents = "none";
+
+      document.body.appendChild(iframe);
+
+      await waitForIframe(iframe);
+
+      const iframeDocument =
+        iframe.contentDocument || iframe.contentWindow?.document;
+
+      if (!iframeDocument) {
+        throw new Error("Geen toegang tot exportpagina");
+      }
+
+      const exportRoot = iframeDocument.querySelector(
+        "#export-root"
+      ) as HTMLElement | null;
+
+      if (!exportRoot) {
+        throw new Error("Export-root niet gevonden");
+      }
+
+      await Promise.all(
+        Array.from(iframeDocument.images).map((img) => {
+          if (img.complete) return Promise.resolve();
+
+          return new Promise<void>((resolve) => {
+            img.onload = () => resolve();
+            img.onerror = () => resolve();
+          });
+        })
+      );
+
+      if ("fonts" in iframeDocument) {
+        await iframeDocument.fonts.ready;
+      }
+
+      const canvas = await html2canvas(exportRoot, {
+        backgroundColor: null,
+        scale: 2,
+        useCORS: true,
+        allowTaint: false,
+        imageTimeout: 10000,
+        logging: false,
+      });
+
+      await new Promise<void>((resolve) => {
+        canvas.toBlob(async (blob) => {
+          if (blob) {
+            await shareOrDownloadBlob(blob);
+          }
+          resolve();
+        }, "image/png", 1);
+      });
+
+      document.body.removeChild(iframe);
     } catch (error) {
       alert("Export mislukt. Probeer het opnieuw.");
     } finally {
       setIsExporting(false);
-      setIsPreparingShare(false);
     }
   };
 
@@ -343,18 +370,18 @@ export default function Home() {
       if (!target || !panel) return;
 
       if (window.innerWidth <= 760) {
-        if (lastMobileAutoScrollRole.current === role) {
-          return;
-        }
-
-        lastMobileAutoScrollRole.current = role;
+        const previousSnapType = panel.style.scrollSnapType;
+        panel.style.scrollSnapType = "none";
 
         panel.scrollTo({
           left: Math.max(0, target.offsetLeft - 10),
           behavior: "smooth",
         });
 
-        window.setTimeout(updateScrollProgress, 420);
+        window.setTimeout(() => {
+          panel.style.scrollSnapType = previousSnapType;
+          updateScrollProgress();
+        }, 420);
       } else {
         target.scrollIntoView({
           behavior: "smooth",
@@ -637,7 +664,6 @@ export default function Home() {
                     onClick={(e) => {
                       e.stopPropagation();
                       setFormationName(f);
-                                        lastMobileAutoScrollRole.current = null;
                       setSelectedSlot(null);
                       setSwapSlot(null);
                     }}
@@ -678,7 +704,7 @@ export default function Home() {
                 cursor: isExporting ? "wait" : "pointer",
               }}
             >
-              {isExporting ? "bezig..." : isMobile && isPreparingShare ? "laden..." : "deel ↗"}
+              {isExporting ? "bezig..." : "deel ↗"}
             </button>
 
             <button
@@ -731,12 +757,10 @@ export default function Home() {
                         ? "0 10px 26px rgba(255,120,0,0.35)"
                         : "none",
                       scrollSnapAlign: isMobile
-                        ? (playerIndex % 3 === 0 || p.id === 8 || p.id === 17 ? "start" : "none")
+                        ? (playerIndex % 3 === 0 ? "start" : "none")
                         : "start",
                       scrollSnapStop:
-                        isMobile && (playerIndex % 3 === 0 || p.id === 8 || p.id === 17)
-                          ? "always"
-                          : "normal",
+                        isMobile && playerIndex % 3 === 0 ? "always" : "normal",
                     }}
                   >
                     <div
@@ -1281,7 +1305,6 @@ const styles: any = {
     overflowY: "hidden",
     scrollSnapType: "x mandatory",
     scrollPaddingLeft: 10,
-    scrollBehavior: "smooth",
     WebkitOverflowScrolling: "touch",
   },
 
