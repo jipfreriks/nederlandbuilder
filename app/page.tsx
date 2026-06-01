@@ -518,8 +518,8 @@ export default function Home() {
             alt="DE18"
             style={{
               position: "absolute",
-              top: isMobile ? 8 : 12,
-              left: isMobile ? 8 : 12,
+              top: isMobile ? 4 : 6,
+              left: isMobile ? 4 : 6,
               width: isMobile ? 76 : 110,
               height: "auto",
               zIndex: 10,
