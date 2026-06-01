@@ -1,5 +1,6 @@
 "use client";
 
+import html2canvas from "html2canvas";
 import { useEffect, useRef, useState } from "react";
 
 type Player = {
@@ -105,6 +106,8 @@ export default function Home() {
   const exportRef = useRef<HTMLDivElement | null>(null);
   const panelRef = useRef<HTMLDivElement | null>(null);
   const playerRefs = useRef<Record<number, HTMLDivElement | null>>({});
+  const lastMobileAutoScrollRole = useRef<SlotRole | null>(null);
+  const preparedMobileShareBlob = useRef<Blob | null>(null);
   const formation = FORMATIONS[formationName];
 
   useEffect(() => {
@@ -211,9 +214,95 @@ export default function Home() {
     setIsExporting(true);
 
     const fileName = `oranje-builder-${formationName}.png`;
-    const squadIds = squad.map((player) => player?.id ?? 0).join(",");
+
+    const downloadBlob = (blob: Blob) => {
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.download = fileName;
+      link.href = url;
+      link.click();
+      URL.revokeObjectURL(url);
+    };
+
+    const shareOrDownloadBlob = async (blob: Blob) => {
+      const isMobileShare =
+        typeof window !== "undefined" &&
+        window.innerWidth <= 760 &&
+        typeof navigator !== "undefined" &&
+        typeof navigator.share === "function";
+
+      if (isMobileShare) {
+        const file = new File([blob], fileName, { type: "image/png" });
+
+        try {
+          await navigator.share({
+            title: "Mijn Oranje-opstelling",
+            text: "Mijn Oranje-opstelling",
+            files: [file],
+          });
+          preparedMobileShareBlob.current = null;
+          return;
+        } catch (error) {
+          if ((error as Error)?.name === "AbortError") return;
+
+          try {
+            await navigator.share({
+              title: "Mijn Oranje-opstelling",
+              text: "Mijn Oranje-opstelling",
+            });
+            preparedMobileShareBlob.current = null;
+            return;
+          } catch {
+            preparedMobileShareBlob.current = blob;
+            alert("Export staat klaar. Tik nog een keer op deel om het Apple-share-menu te openen.");
+            return;
+          }
+        }
+      }
+
+      downloadBlob(blob);
+    };
 
     try {
+      const isMobileDevice =
+        typeof window !== "undefined" && window.innerWidth <= 760;
+
+      // Mobiel: als de export al klaarstaat, open direct het native share-menu.
+      if (isMobileDevice && preparedMobileShareBlob.current) {
+        await shareOrDownloadBlob(preparedMobileShareBlob.current);
+        return;
+      }
+
+      // Mobiel: lokaal exporteren, zodat het native share-menu betrouwbaar opent.
+      if (isMobileDevice) {
+        if (!exportRef.current) return;
+
+        await preloadImages();
+
+        const canvas = await html2canvas(exportRef.current, {
+          backgroundColor: null,
+          scale: 3,
+          useCORS: true,
+          allowTaint: false,
+          imageTimeout: 15000,
+          logging: false,
+        });
+
+        await new Promise<void>((resolve) => {
+          canvas.toBlob(async (blob) => {
+            if (blob) {
+              await shareOrDownloadBlob(blob);
+            }
+            resolve();
+          }, "image/png", 1);
+        });
+
+        return;
+      }
+
+      // Desktop: server-export via /api/export.
+      const squadIds = squad.map((player) => player?.id ?? 0).join(",");
+
       const response = await fetch("/api/export", {
         method: "POST",
         headers: {
@@ -231,45 +320,7 @@ export default function Home() {
       }
 
       const blob = await response.blob();
-
-      const isMobileShare =
-        typeof window !== "undefined" &&
-        window.innerWidth <= 760 &&
-        typeof navigator !== "undefined" &&
-        typeof navigator.share === "function";
-
-      if (isMobileShare) {
-        try {
-          const file = new File([blob], fileName, { type: "image/png" });
-
-          if (
-            typeof navigator.canShare === "function" &&
-            navigator.canShare({ files: [file] })
-          ) {
-            await navigator.share({
-              title: "Mijn Oranje-opstelling",
-              text: "Mijn Oranje-opstelling",
-              files: [file],
-            });
-            return;
-          }
-
-          await navigator.share({
-            title: "Mijn Oranje-opstelling",
-            text: "Mijn Oranje-opstelling",
-          });
-          return;
-        } catch (error) {
-          if ((error as Error)?.name === "AbortError") return;
-        }
-      }
-
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.download = fileName;
-      link.href = url;
-      link.click();
-      URL.revokeObjectURL(url);
+      downloadBlob(blob);
     } finally {
       setIsExporting(false);
     }
@@ -293,7 +344,12 @@ export default function Home() {
       if (!target || !panel) return;
 
       if (window.innerWidth <= 760) {
-        const previousSnapType = panel.style.scrollSnapType;
+        if (lastMobileAutoScrollRole.current === role) {
+          return;
+        }
+
+        lastMobileAutoScrollRole.current = role;
+
         panel.style.scrollSnapType = "none";
 
         panel.scrollTo({
@@ -302,7 +358,7 @@ export default function Home() {
         });
 
         window.setTimeout(() => {
-          panel.style.scrollSnapType = previousSnapType;
+          panel.style.scrollSnapType = "x mandatory";
           updateScrollProgress();
         }, 420);
       } else {
@@ -317,6 +373,7 @@ export default function Home() {
   };
 
   const clearSelection = () => {
+    preparedMobileShareBlob.current = null;
     setSquad(Array(11).fill(null));
     setSelectedPlayer(null);
     setSelectedSlot(null);
@@ -341,6 +398,7 @@ export default function Home() {
   };
 
   const handleFieldClick = (index: number) => {
+    preparedMobileShareBlob.current = null;
     scrollToRole(getSlotRole(index));
 
     if (selectedPlayer) {
@@ -392,6 +450,7 @@ export default function Home() {
   };
 
   const handleInventoryClick = (player: Player) => {
+    preparedMobileShareBlob.current = null;
     if (swapSlot !== null) {
       setSquad((prev) => {
         const next = [...prev];
@@ -587,6 +646,8 @@ export default function Home() {
                     onClick={(e) => {
                       e.stopPropagation();
                       setFormationName(f);
+                      preparedMobileShareBlob.current = null;
+                      lastMobileAutoScrollRole.current = null;
                       setSelectedSlot(null);
                       setSwapSlot(null);
                     }}
@@ -1228,6 +1289,7 @@ const styles: any = {
     overflowY: "hidden",
     scrollSnapType: "x mandatory",
     scrollPaddingLeft: 10,
+    scrollBehavior: "smooth",
     WebkitOverflowScrolling: "touch",
   },
 
