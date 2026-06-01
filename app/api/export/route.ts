@@ -9,7 +9,7 @@ type ExportBody = {
 };
 
 export async function POST(req: Request) {
-  let browser;
+  let browser: Awaited<ReturnType<typeof chromium.launch>> | null = null;
 
   try {
     const body = (await req.json()) as ExportBody;
@@ -71,7 +71,7 @@ export async function POST(req: Request) {
       type: "png",
     });
 
-    return new Response(screenshot, {
+    return new Response(new Uint8Array(screenshot), {
       headers: {
         "Content-Type": "image/png",
         "Cache-Control": "no-store",

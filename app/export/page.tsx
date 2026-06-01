@@ -1,7 +1,3 @@
-"use client";
-
-import { useSearchParams } from "next/navigation";
-
 type Player = {
   id: number;
   name: string;
@@ -66,20 +62,34 @@ const FORMATIONS: Record<FormationName, number[][]> = {
 // =====================================================
 const ROEFS_FIELD_SCALE = 1.15;
 const ROEFS_FIELD_Y = "-60%";
+
+// Noa Lang
+const NOA_LANG_SCALE = 0.92;
+const NOA_LANG_Y = "-10%";
+
+// Teun Koopmeiners
+const KOOPMEINERS_Y = "25%";
 // =====================================================
 
 function getPlayer(id: number) {
   return PLAYERS.find((player) => player.id === id) ?? null;
 }
 
-export default function ExportPage() {
-  const searchParams = useSearchParams();
+export default async function ExportPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{
+    formation?: string;
+    squad?: string;
+  }>;
+}) {
+  const params = await searchParams;
 
-  const formationParam = searchParams.get("formation");
+  const formationParam = params?.formation;
   const formationName: FormationName =
     formationParam === "532" || formationParam === "442" ? formationParam : "433";
 
-  const ids = (searchParams.get("squad") ?? "")
+  const ids = (params?.squad ?? "")
     .split(",")
     .map((value) => Number(value));
 
@@ -102,9 +112,19 @@ export default function ExportPage() {
                 ...styles.cardPhoto,
                 backgroundImage: `url("${proxiedImage(player.image)}")`,
                 backgroundPosition:
-                  player.id === 26 ? `center ${ROEFS_FIELD_Y}` : "center 15%",
+                  player.id === 26
+                    ? `center ${ROEFS_FIELD_Y}`
+                    : player.id === 12
+                      ? `center ${KOOPMEINERS_Y}`
+                      : player.id === 22
+                        ? `center ${NOA_LANG_Y}`
+                        : "center 15%",
                 transform:
-                  player.id === 26 ? `scale(${ROEFS_FIELD_SCALE})` : "scale(1)",
+                  player.id === 26
+                    ? `scale(${ROEFS_FIELD_SCALE})`
+                    : player.id === 22
+                      ? `scale(${NOA_LANG_SCALE})`
+                      : "scale(1)",
               }}
             />
             <div style={styles.cardOverlay} />
