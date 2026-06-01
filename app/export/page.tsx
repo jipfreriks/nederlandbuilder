@@ -102,11 +102,13 @@ export default async function ExportPage({
       <div key={slotIndex} style={styles.slot}>
         {player && nameParts ? (
           <div style={styles.card}>
-            <div
+            <img
+              src={proxiedImage(player.image)}
+              alt=""
+              draggable={false}
               style={{
                 ...styles.cardPhoto,
-                backgroundImage: `url("${proxiedImage(player.image)}")`,
-                backgroundPosition:
+                objectPosition:
                   player.id === 26
                     ? `center ${ROEFS_FIELD_Y}`
                     : player.id === 12
@@ -256,9 +258,11 @@ const styles: Record<string, React.CSSProperties> = {
   cardPhoto: {
     position: "absolute",
     inset: 0,
-    backgroundSize: "cover",
-    backgroundPosition: "center 15%",
-    backgroundRepeat: "no-repeat",
+    width: "100%",
+    height: "100%",
+    display: "block",
+    objectFit: "cover",
+    objectPosition: "center 15%",
     imageRendering: "auto",
     transformOrigin: "center center",
   },
