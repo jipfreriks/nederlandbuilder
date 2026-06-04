@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   description: "Maak jouw ideale Oranje-opstelling en deel hem met vrienden.",
 
   openGraph: {
-    title: "De18Miljoenste Bondscoach",
+    title: "De18MiljoensteBondscoach.nl",
     description: "Maak jouw ideale Oranje-opstelling en deel hem met vrienden.",
     url: "https://de18miljoenstebondscoach.nl",
     siteName: "De18MiljoensteBondscoach.nl",
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
 
   twitter: {
     card: "summary_large_image",
-    title: "De18Miljoenste Bondscoach",
+    title: "De18MiljoensteBondscoach",
     description: "Maak jouw ideale Oranje-opstelling en deel hem met vrienden.",
     images: ["/og-image.png"],
   },
