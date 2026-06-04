@@ -3,12 +3,6 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
 
-export const metadata = {
-  title: "De 18 Miljoenste Bondscoach",
-  description:
-    "Maak jouw ideale Oranje-opstelling en deel hem met vrienden.",
-};
-
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -19,9 +13,10 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "De18MiljoensteBondscoach",
-  description: "Het elftal van de echte kenner.",
+export const metadata = {
+  title: "De 18 Miljoenste Bondscoach",
+  description:
+    "Maak jouw ideale Oranje-opstelling en deel hem met vrienden.",
 };
 
 export default function RootLayout({
