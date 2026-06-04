@@ -3,6 +3,12 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
 
+export const metadata = {
+  title: "De 18 Miljoenste Bondscoach",
+  description:
+    "Maak jouw ideale Oranje-opstelling en deel hem met vrienden.",
+};
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
