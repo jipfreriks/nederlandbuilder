@@ -13,8 +13,6 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-import type { Metadata } from "next";
-
 export const metadata: Metadata = {
   title: "De18MiljoensteBondscoach.nl",
   description: "Maak jouw ideale Oranje-opstelling en deel hem met vrienden.",
