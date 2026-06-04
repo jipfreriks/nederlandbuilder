@@ -13,10 +13,34 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata = {
-  title: "De 18 Miljoenste Bondscoach",
-  description:
-    "Maak jouw ideale Oranje-opstelling en deel hem met vrienden.",
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "De18MiljoensteBondscoach.nl",
+  description: "Maak jouw ideale Oranje-opstelling en deel hem met vrienden.",
+
+  openGraph: {
+    title: "De18Miljoenste Bondscoach",
+    description: "Maak jouw ideale Oranje-opstelling en deel hem met vrienden.",
+    url: "https://de18miljoenstebondscoach.nl",
+    siteName: "De18MiljoensteBondscoach.nl",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+      },
+    ],
+    locale: "nl_NL",
+    type: "website",
+  },
+
+  twitter: {
+    card: "summary_large_image",
+    title: "De18Miljoenste Bondscoach",
+    description: "Maak jouw ideale Oranje-opstelling en deel hem met vrienden.",
+    images: ["/og-image.png"],
+  },
 };
 
 export default function RootLayout({
