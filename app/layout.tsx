@@ -14,11 +14,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "De18MiljoensteBondscoach.nl",
+  title: "De18MiljoensteBondscoach",
   description: "Maak jouw ideale Oranje-opstelling en deel hem met vrienden.",
 
   openGraph: {
-    title: "De18MiljoensteBondscoach.nl",
+    title: "De18MiljoensteBondscoach",
     description: "Maak jouw ideale Oranje-opstelling en deel hem met vrienden.",
     url: "https://de18miljoenstebondscoach.nl",
     siteName: "De18MiljoensteBondscoach.nl",
