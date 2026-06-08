@@ -27,7 +27,7 @@ const PLAYERS: Player[] = [
   { id: 1, name: "Virgil van Dijk", pos: "DEF", image: "https://sassets.knvb.nl/sites/onsoranje.nl/files/players/b61529d98808eb966fa155298ca81792.png" },
   { id: 2, name: "Nathan Aké", pos: "DEF", image: "https://sassets.knvb.nl/sites/onsoranje.nl/files/players/6d083f4cd5471af78621f2ef39b2ec8d.png" },
   { id: 3, name: "Micky van de Ven", pos: "DEF", image: "https://sassets.knvb.nl/sites/onsoranje.nl/files/players/16c8b649221dc9ab2af8e1d4214affd9.png" },
-  { id: 4, name: "Jurriën Timber", pos: "DEF", image: "https://sassets.knvb.nl/sites/onsoranje.nl/files/players/5558488abad76dabf7076daf84500e20.png" },
+  { id: 4, name: "Lutsharel Geertruida", pos: "DEF", image: "https://sassets.knvb.nl/sites/onsoranje.nl/files/players/8c861f620a3c8ea3c9927ac7bb54c1af.png" },
   { id: 5, name: "Denzel Dumfries", pos: "DEF", image: "https://sassets.knvb.nl/sites/onsoranje.nl/files/players/eb7c4ba733681711810cfff5deb06b23.png" },
   { id: 6, name: "Jorrel Hato", pos: "DEF", image: "https://sassets.knvb.nl/sites/onsoranje.nl/files/players/cc449e3c4dc6a3ddb4f22416872a0db5.png" },
   { id: 7, name: "Jan Paul van Hecke", pos: "DEF", image: "https://sassets.knvb.nl/sites/onsoranje.nl/files/players/22d846a63280443114ec4423c562a804.png" },

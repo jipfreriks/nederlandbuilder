@@ -35,7 +35,7 @@ const PLAYERS: Player[] = [
   { id: 1, name: "Virgil van Dijk", pos: "DEF", image: "https://sassets.knvb.nl/sites/onsoranje.nl/files/players/b61529d98808eb966fa155298ca81792.png" },
   { id: 2, name: "Nathan Aké", pos: "DEF", image: "https://sassets.knvb.nl/sites/onsoranje.nl/files/players/6d083f4cd5471af78621f2ef39b2ec8d.png" },
   { id: 3, name: "Micky van de Ven", pos: "DEF", image: "https://sassets.knvb.nl/sites/onsoranje.nl/files/players/16c8b649221dc9ab2af8e1d4214affd9.png" },
-  { id: 4, name: "Jurriën Timber", pos: "DEF", image: "https://sassets.knvb.nl/sites/onsoranje.nl/files/players/5558488abad76dabf7076daf84500e20.png" },
+  { id: 4, name: "Lutsharel Geertruida", pos: "DEF", image: "https://sassets.knvb.nl/sites/onsoranje.nl/files/players/8c861f620a3c8ea3c9927ac7bb54c1af.png" },
   { id: 5, name: "Denzel Dumfries", pos: "DEF", image: "https://sassets.knvb.nl/sites/onsoranje.nl/files/players/eb7c4ba733681711810cfff5deb06b23.png" },
   { id: 6, name: "Jorrel Hato", pos: "DEF", image: "https://sassets.knvb.nl/sites/onsoranje.nl/files/players/cc449e3c4dc6a3ddb4f22416872a0db5.png" },
   { id: 7, name: "Jan Paul van Hecke", pos: "DEF", image: "https://sassets.knvb.nl/sites/onsoranje.nl/files/players/22d846a63280443114ec4423c562a804.png" },
@@ -88,6 +88,9 @@ const KOOPMEINERS_Y = "25%";
 const TRASH_CURSOR =
   "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Crect x='10' y='12' width='12' height='13' rx='2' fill='none' stroke='%23ffffff' stroke-width='2.2'/%3E%3Cpath d='M9 9h14M13 9V7h6v2M14 15v7M18 15v7' fill='none' stroke='%23ffffff' stroke-width='2.2' stroke-linecap='round'/%3E%3C/svg%3E\") 16 16, pointer";
 
+const fileNameForPreview = (formationName: FormationName) =>
+  `oranje-builder-${formationName}.png`;
+
 export default function Home() {
   const [formationName, setFormationName] = useState<FormationName>("433");
   const [squad, setSquad] = useState<(Player | null)[]>(Array(11).fill(null));
@@ -100,6 +103,7 @@ export default function Home() {
   const [scrollProgress, setScrollProgress] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [instagramSharePreview, setInstagramSharePreview] = useState<string | null>(null);
 
   const exportRef = useRef<HTMLDivElement | null>(null);
   const panelRef = useRef<HTMLDivElement | null>(null);
@@ -213,6 +217,19 @@ export default function Home() {
     } catch {}
   };
 
+  const isInstagramBrowser = () => {
+    if (typeof navigator === "undefined") return false;
+    return /Instagram/i.test(navigator.userAgent);
+  };
+
+  const closeInstagramShareHelp = () => {
+    if (instagramSharePreview) {
+      URL.revokeObjectURL(instagramSharePreview);
+    }
+
+    setInstagramSharePreview(null);
+  };
+
   const exportPng = async () => {
     if (isExporting) return;
 
@@ -241,11 +258,26 @@ export default function Home() {
         try {
           const file = new File([blob], fileName, { type: "image/png" });
 
+          if (isInstagramBrowser()) {
+            await copyMobileShareText();
+
+            const previewUrl = URL.createObjectURL(blob);
+            setInstagramSharePreview((current) => {
+              if (current) URL.revokeObjectURL(current);
+              return previewUrl;
+            });
+
+            return;
+          }
+
           if (
             typeof navigator.canShare === "function" &&
             navigator.canShare({ files: [file] })
           ) {
             await copyMobileShareText();
+
+            // Buiten de Instagram-browser delen we wél gewoon de tekst mee,
+            // zodat WhatsApp/Berichten/etc. ook de link naar de site krijgen.
             await navigator.share({
               title: "Mijn Oranje-opstelling!",
               text: "Mijn Oranje-opstelling! 🦁 Via de18miljoenstebondscoach.nl",
@@ -818,6 +850,43 @@ export default function Home() {
         </div>
       </div>
 
+      {instagramSharePreview && (
+        <div style={styles.instagramOverlay} onClick={closeInstagramShareHelp}>
+          <div style={styles.instagramModal} onClick={(e) => e.stopPropagation()}>
+            <div style={styles.instagramTitle}>Open in Safari</div>
+            <div style={styles.instagramText}>
+              Instagram opent deze site in een eigen browser. Daardoor opent hij geen volledig deelmenu.
+              Open de pagina in Safari of Chrome om via WhatsApp, Berichten of andere apps te delen.
+            </div>
+
+            <img src={instagramSharePreview} alt="Mijn Oranje-opstelling" style={styles.instagramPreview} />
+
+            <div style={styles.instagramActions}>
+              <a
+                href={instagramSharePreview}
+                download={fileNameForPreview(formationName)}
+                style={styles.instagramPrimaryButton}
+              >
+                afbeelding opslaan
+              </a>
+
+              <button type="button" style={styles.instagramSecondaryButton} onClick={copyMobileShareText}>
+                tekst kopiëren
+              </button>
+
+              <button type="button" style={styles.instagramSecondaryButton} onClick={closeInstagramShareHelp}>
+                sluiten
+              </button>
+            </div>
+
+            <div style={styles.instagramHint}>
+              Tik in Instagram rechtsboven op ••• en kies “Open in browser” of “Open in Safari”.
+              Daar werkt de deelknop met afbeelding én begeleidende tekst/link.
+            </div>
+          </div>
+        </div>
+      )}
+
       <div ref={exportRef} style={styles.exportField}>
         <div style={styles.siteTexture} />
         {renderPitchLines()}
@@ -1227,6 +1296,97 @@ const styles: any = {
     overflow: "hidden",
     cursor: "pointer",
     transition: "transform .18s ease, box-shadow .18s ease, border .18s ease",
+  },
+
+  instagramOverlay: {
+    position: "fixed",
+    inset: 0,
+    zIndex: 9999,
+    background: "rgba(0,0,0,0.72)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 16,
+    boxSizing: "border-box",
+  },
+
+  instagramModal: {
+    width: "min(420px, 100%)",
+    maxHeight: "92dvh",
+    overflowY: "auto",
+    borderRadius: 22,
+    padding: 18,
+    boxSizing: "border-box",
+    background: "linear-gradient(135deg,#ff7a18,#ff4d00,#6b0000)",
+    color: "white",
+    fontFamily: "'Bungee', sans-serif",
+    boxShadow: "0 24px 80px rgba(0,0,0,0.55)",
+    border: "1px solid rgba(255,255,255,0.18)",
+  },
+
+  instagramTitle: {
+    fontSize: 18,
+    lineHeight: 1,
+    marginBottom: 10,
+    textAlign: "center",
+    textShadow: "0 2px 10px rgba(0,0,0,0.35)",
+  },
+
+  instagramText: {
+    fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+    fontSize: 14,
+    lineHeight: 1.35,
+    marginBottom: 14,
+    textAlign: "center",
+  },
+
+  instagramPreview: {
+    display: "block",
+    width: "100%",
+    height: "auto",
+    borderRadius: 14,
+    marginBottom: 14,
+    boxShadow: "0 12px 32px rgba(0,0,0,0.35)",
+  },
+
+  instagramActions: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 8,
+  },
+
+  instagramPrimaryButton: {
+    display: "block",
+    textDecoration: "none",
+    textAlign: "center",
+    border: "none",
+    borderRadius: 13,
+    padding: "12px 14px",
+    fontFamily: "'Bungee', sans-serif",
+    fontSize: 12,
+    color: "white",
+    background: "#27418C",
+    boxShadow: "0 8px 24px rgba(39,65,140,0.35)",
+  },
+
+  instagramSecondaryButton: {
+    border: "none",
+    borderRadius: 13,
+    padding: "12px 14px",
+    fontFamily: "'Bungee', sans-serif",
+    fontSize: 12,
+    color: "white",
+    background: "rgba(0,0,0,0.32)",
+    cursor: "pointer",
+  },
+
+  instagramHint: {
+    marginTop: 12,
+    fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+    fontSize: 12,
+    lineHeight: 1.35,
+    opacity: 0.92,
+    textAlign: "center",
   },
 
   mobilePage: {
